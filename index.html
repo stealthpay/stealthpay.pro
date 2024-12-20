@@ -12,8 +12,8 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            background-color: #000; /* Dökkur bakgrunnur */
+            height: 100vh; /* Full hæð skjásins */
+            background-color: #000; /* Dökkt bakgrunnsefni */
             color: #fff; /* Hvítur texti */
             font-family: Arial, sans-serif;
         }
@@ -30,37 +30,9 @@
         }
 
         a {
-            margin-top: 20px;
-            color: #00f; /* Blár tengill */
-            font-size: 1.2rem;
+            margin-top: 10px;
+            color: #00f; /* Blár texti */
             text-decoration: underline;
-        }
-    </style>
-</head>
-<body>
-    <img src="logo.png" alt="StealthPay Logo">
-    <h1>Project in Progress</h1>
-    <a href="mailto:info@stealthpay.pro">Contact Us: info@stealthpay.pro</a>
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StealthPay</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #000;
-            color: #fff;
-            font-family: Arial, sans-serif;
         }
 
         #metamask-button {
@@ -82,12 +54,13 @@
     </style>
 </head>
 <body>
+    <!-- MetaMask tengihnappur -->
+    <button id="metamask-button">Connect MetaMask</button>
+
+    <!-- Lógó og texti -->
     <img src="logo.png" alt="StealthPay Logo">
     <h1>Project in Progress</h1>
     <a href="mailto:info@stealthpay.pro">Contact Us: info@stealthpay.pro</a>
-
-    <!-- MetaMask hnappur -->
-    <button id="metamask-button">Connect MetaMask</button>
 
     <script>
         // JavaScript fyrir MetaMask tengingu
@@ -96,7 +69,6 @@
         metamaskButton.addEventListener('click', async () => {
             if (typeof window.ethereum !== 'undefined') {
                 try {
-                    // Beiðni um að tengjast MetaMask
                     await window.ethereum.request({ method: 'eth_requestAccounts' });
                     alert('MetaMask connected successfully!');
                 } catch (error) {
