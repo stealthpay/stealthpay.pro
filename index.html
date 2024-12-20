@@ -52,3 +52,40 @@
         }
     });
 </script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StealthPay</title>
+    <style>
+        /* CSS fyrir snúning */
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #000; /* Dökkt bakgrunnsefni */
+        }
+
+        img {
+            max-width: 50%;
+            animation: rotate 4s linear infinite;
+        }
+
+        @keyframes rotate {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <img src="logo.png" alt="StealthPay Logo">
+</body>
+</html>
