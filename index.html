@@ -33,3 +33,22 @@
     <h1>In Progress</h1>
 </body>
 </html>
+<button id="connectMetamask">Connect to Metamask</button>
+<script>
+    // Tengja Metamask
+    const connectButton = document.getElementById('connectMetamask');
+
+    connectButton.addEventListener('click', async () => {
+        if (typeof window.ethereum !== 'undefined') {
+            try {
+                // Biðja notanda um að tengja við Metamask
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                alert(`Connected: ${accounts[0]}`);
+            } catch (error) {
+                alert('User rejected the connection.');
+            }
+        } else {
+            alert('Please install Metamask to use this feature.');
+        }
+    });
+</script>
