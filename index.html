@@ -43,3 +43,69 @@
     <a href="mailto:info@stealthpay.pro">Contact Us: info@stealthpay.pro</a>
 </body>
 </html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StealthPay</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #000;
+            color: #fff;
+            font-family: Arial, sans-serif;
+        }
+
+        #metamask-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: #f6851b;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        #metamask-button:hover {
+            background-color: #e2741d;
+        }
+    </style>
+</head>
+<body>
+    <img src="logo.png" alt="StealthPay Logo">
+    <h1>Project in Progress</h1>
+    <a href="mailto:info@stealthpay.pro">Contact Us: info@stealthpay.pro</a>
+
+    <!-- MetaMask hnappur -->
+    <button id="metamask-button">Connect MetaMask</button>
+
+    <script>
+        // JavaScript fyrir MetaMask tengingu
+        const metamaskButton = document.getElementById('metamask-button');
+
+        metamaskButton.addEventListener('click', async () => {
+            if (typeof window.ethereum !== 'undefined') {
+                try {
+                    // Beiðni um að tengjast MetaMask
+                    await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    alert('MetaMask connected successfully!');
+                } catch (error) {
+                    console.error('User rejected connection', error);
+                }
+            } else {
+                alert('MetaMask is not installed. Please install MetaMask and try again.');
+            }
+        });
+    </script>
+</body>
+</html>
