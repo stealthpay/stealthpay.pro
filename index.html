@@ -74,6 +74,15 @@
     .btn.quick:hover {
       background-color: #666;
     }
+
+    .btn.xmr {
+      background-color: #2a2;
+      border: none;
+    }
+
+    .btn.xmr:hover {
+      background-color: #3c3;
+    }
   </style>
 </head>
 <body>
@@ -81,6 +90,7 @@
   <div class="top-right">
     <button id="quick-button" class="btn quick">Hraðskráning</button>
     <button id="metamask-button" class="btn metamask">Connect MetaMask</button>
+    <button id="xmr-button" class="btn xmr">Fyllt á með XMR</button>
   </div>
 
   <!-- Miðjusvæði -->
@@ -96,7 +106,6 @@
         try {
           await window.ethereum.request({ method: 'eth_requestAccounts' });
           alert('MetaMask tengdist með góðum árangri!');
-          // Dæmi: vísa áfram
           // window.location.href = "/dashboard.html";
         } catch (error) {
           console.error('Notandi hafnaði tengingu', error);
@@ -106,10 +115,16 @@
       }
     });
 
-    // Hraðskráning – vísa á register.html
+    // Hraðskráning
     const quickButton = document.getElementById('quick-button');
     quickButton.addEventListener('click', () => {
       window.location.href = "register.html";
+    });
+
+    // Fylling með XMR
+    const xmrButton = document.getElementById('xmr-button');
+    xmrButton.addEventListener('click', () => {
+      window.location.href = "xmr-deposit.html";
     });
   </script>
 </body>
