@@ -16,6 +16,7 @@
       background-color: #000;
       color: #fff;
       font-family: Arial, sans-serif;
+      position: relative;
     }
 
     img {
@@ -41,6 +42,12 @@
       right: 20px;
       display: flex;
       gap: 10px;
+    }
+
+    .bottom-right {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
     }
 
     .btn {
@@ -83,6 +90,15 @@
     .btn.xmr:hover {
       background-color: #3c3;
     }
+
+    .btn.pro {
+      background-color: #0055ff;
+      border: none;
+    }
+
+    .btn.pro:hover {
+      background-color: #3366ff;
+    }
   </style>
 </head>
 <body>
@@ -91,6 +107,11 @@
     <button id="quick-button" class="btn quick">Hraðskráning</button>
     <button id="metamask-button" class="btn metamask">Connect MetaMask</button>
     <button id="xmr-button" class="btn xmr">Fyllt á með XMR</button>
+  </div>
+
+  <!-- Neðri takkinn -->
+  <div class="bottom-right">
+    <button id="pro-button" class="btn pro">Pro aðgangur</button>
   </div>
 
   <!-- Miðjusvæði -->
@@ -125,6 +146,12 @@
     const xmrButton = document.getElementById('xmr-button');
     xmrButton.addEventListener('click', () => {
       window.location.href = "xmr-deposit.html";
+    });
+
+    // Pro aðgangur
+    const proButton = document.getElementById('pro-button');
+    proButton.addEventListener('click', () => {
+      window.location.href = "pro.html";
     });
   </script>
 </body>
