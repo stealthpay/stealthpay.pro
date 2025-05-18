@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Innborgun með XMR - StealthPay</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #000;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      text-align: center;
+    }
+
+    .container {
+      max-width: 400px;
+      background-color: #111;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px #222;
+    }
+
+    input {
+      padding: 10px;
+      margin-top: 10px;
+      width: 100%;
+      border-radius: 5px;
+      border: none;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 10px;
+      width: 100%;
+      border: none;
+      border-radius: 5px;
+      background-color: #f6851b;
+      color: white;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #e2741d;
+    }
+
+    .info {
+      margin-top: 20px;
+      font-size: 0.9rem;
+    }
+
+    .success {
+      margin-top: 20px;
+      padding: 10px;
+      background-color: #0a0;
+      color: white;
+      border-radius: 5px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Innborgun með XMR</h2>
+    <p>Færðu inn upphæð sem þú vilt leggja inn í Skr:</p>
+    <input type="number" id="amountISK" placeholder="T.d. 1000 Skr" />
+    <button onclick="calculateXMR()">Sækja greiðsluupplýsingar</button>
+
+    <div class="info" id="payment-info" style="display:none;">
+      <p><strong>Greiddu XMR á eftirfarandi reikning:</strong></p>
+      <p>XMR Address: <span id="xmr-address">84U9...MockAddress</span></p>
+      <p>Greiðsla í XMR: <span id="xmr-amount"></span> XMR</p>
+      <p>Eftir greiðslu færðu samsvarandi <strong>SKR</strong> inneign í veski þitt.</p>
+      <button onclick="confirmDeposit()">Staðfesta innborgun</button>
+    </div>
+
+    <div class="success" id="success-box">
+      ✅ Innborgun móttekin! Þú hefur nú fengið <span id="received-xst"></span> SKR
+    </div>
+  </div>
+
+  <script>
+    function calculateXMR() {
+      const amountISK = parseFloat(document.getElementById("amountISK").value);
+      if (isNaN(amountISK) || amountISK <= 0) {
+        alert("Vinsamlegast sláðu inn upphæð í ISK");
+        return;
+      }
+
+      // Mock gengi: 1 XMR = 10.000 ISK
+      const xmrRate = 10000;
+      const xmrAmount = (amountISK / xmrRate).toFixed(6);
+
+      document.getElementById("xmr-amount").textContent = xmrAmount;
+      document.getElementById("payment-info").style.display = "block";
+
+      // Vista fyrir staðfestingu
+      document.getElementById("payment-info").dataset.amountXST = amountISK;
+    }
+
+    function confirmDeposit() {
+      const xst = document.getElementById("payment-info").dataset.amountXST;
+      document.getElementById("received-xst").textContent = xst;
+      document.getElementById("success-box").style.display = "block";
+    }
+  </script>
+</body>
+</html>
