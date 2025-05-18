@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="is">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -127,7 +127,6 @@
         try {
           await window.ethereum.request({ method: 'eth_requestAccounts' });
           alert('MetaMask tengdist með góðum árangri!');
-          // window.location.href = "/dashboard.html";
         } catch (error) {
           console.error('Notandi hafnaði tengingu', error);
         }
