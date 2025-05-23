@@ -2,135 +2,50 @@
 <html lang="is">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hraðskráning – StealthPay</title>
+  <title>Panta inneignarkort – StealthPay</title>
   <style>
-    body {
-      margin: 0;
-      padding: 0;
-      background-color: #000;
-      color: #fff;
-      font-family: Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-    }
-
-    h1 {
-      margin-bottom: 20px;
-    }
-
-    form {
-      background: #111;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px #222;
-      width: 300px;
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-    }
-
-    input {
-      padding: 10px;
-      border-radius: 5px;
-      border: none;
-      font-size: 1rem;
-    }
-
-    button {
-      padding: 10px;
-      border-radius: 5px;
-      background-color: #f6851b;
-      border: none;
-      font-size: 1rem;
-      color: #fff;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background-color: #e2741d;
-    }
-
-    .wallet-info {
-      margin-top: 30px;
-      background-color: #111;
-      padding: 20px;
-      border-radius: 10px;
-      word-break: break-all;
-      text-align: center;
-    }
-
-    .top-link {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      color: #fff;
-      text-decoration: underline;
-    }
+    body { font-family: Arial, sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; background: #f3f3f3; border-radius: 10px; }
+    h1 { text-align: center; }
+    label { display: block; margin-top: 15px; font-weight: bold; }
+    input, textarea { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px; }
+    button { margin-top: 25px; width: 100%; padding: 12px; background-color: #009688; color: white; font-size: 16px; border: none; border-radius: 5px; }
+    .info { margin-top: 30px; font-size: 14px; color: #444; background: #fff; padding: 15px; border-radius: 6px; }
+    ul { margin-top: 10px; }
   </style>
 </head>
 <body>
+  <h1>Panta inneignarkort</h1>
+  <p>Þú greiðir 100.000 kr og færð rafrænt inneignarkort með 97.000 kr til notkunar í kerfinu.</p>
 
-<a class="top-link" href="index.html">← Til baka</a>
+  <form action="thankyou.html" method="post">
+    <label>Fullt nafn:
+      <input type="text" name="name" required>
+    </label>
 
-<h1>Hraðskráning</h1>
+    <label>Netfang:
+      <input type="email" name="email" required>
+    </label>
 
-<form id="register-form">
-  <input type="text" id="name" placeholder="Nafn" required />
-  <input type="email" id="email" placeholder="Netfang" required />
-  <button type="submit">Stofna burner-veski</button>
-</form>
+    <label>Móttakandi inneignarkorts (t.d. kennitala eða notandi):
+      <input type="text" name="identifier" required>
+    </label>
 
-<div class="wallet-info" id="wallet-info" style="display:none;">
-  <p><strong>Burner Wallet búið til!</strong></p>
-  <p><strong>Wallet Address:</strong> <span id="wallet-address"></span></p>
-  <p><strong>Private Key:</strong> <span id="private-key"></span></p>
-  <p><strong>Innborgun:</strong></p>
-  <input type="number" placeholder="Upphæð í kr." id="deposit-amount"/>
-  <button onclick="simulateDeposit()">Fyllt á veski</button>
-</div>
+    <label>Athugasemd (valfrjálst):
+      <textarea name="note" rows="4" placeholder="T.d. kvittunarnúmer eða skilaboð."></textarea>
+    </label>
 
-<script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
-<script>
-  const form = document.getElementById('register-form');
-  const walletInfo = document.getElementById('wallet-info');
-  const walletAddressSpan = document.getElementById('wallet-address');
-  const privateKeySpan = document.getElementById('private-key');
+    <button type="submit">Senda beiðni</button>
+  </form>
 
-  let wallet;
-
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-
-    const name = document.getElementById('name').value;
-    const email = document.getElementById('email').value;
-
-    // Búa til burner wallet
-    wallet = ethers.Wallet.createRandom();
-
-    // Sýna wallet info
-    walletInfo.style.display = 'block';
-    walletAddressSpan.textContent = wallet.address;
-    privateKeySpan.textContent = wallet.privateKey;
-
-    // Vista í localStorage (valfrjálst)
-    localStorage.setItem('stealthpay_burner_wallet', JSON.stringify({
-      name,
-      email,
-      address: wallet.address,
-      privateKey: wallet.privateKey
-    }));
-  });
-
-  function simulateDeposit() {
-    const amount = document.getElementById('deposit-amount').value;
-    alert(`Upphæð ${amount} kr. "send" í veskið ${wallet.address} (mock)`);
-    // Hér gæti verið API call í framtíð: fetch("/api/deposit", { ... })
-  }
-</script>
-
+  <div class="info">
+    <p><strong>Greiðsluleiðbeiningar:</strong></p>
+    <p>Millifærðu 100.000 kr á eftirfarandi reikning:</p>
+    <ul>
+      <li><strong>Banki:</strong> 0152-26-000123</li>
+      <li><strong>Kennitala:</strong> 000000-0000</li>
+      <li><strong>Skýring:</strong> Netfangið þitt eða kennitala</li>
+    </ul>
+    <p>Eftir staðfestingu færðu inneignarkort með 97.000 kr skráð á viðkomandi aðila. 3% þjónustugjald er innifalið í verði.</p>
+  </div>
 </body>
 </html>
