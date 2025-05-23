@@ -1,33 +1,78 @@
 <!DOCTYPE html>
 <html lang="is">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Panta inneignarkort – StealthPay</title>
   <style>
-    body { font-family: Arial, sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; background: #f3f3f3; border-radius: 10px; }
-    h1 { text-align: center; }
-    label { display: block; margin-top: 15px; font-weight: bold; }
-    input, textarea { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px; }
-    button { margin-top: 25px; width: 100%; padding: 12px; background-color: #009688; color: white; font-size: 16px; border: none; border-radius: 5px; }
-    .info { margin-top: 30px; font-size: 14px; color: #444; background: #fff; padding: 15px; border-radius: 6px; }
-    ul { margin-top: 10px; }
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 20px;
+      background-color: #000;
+      color: #fff;
+      border-radius: 10px;
+    }
+    h1 {
+      text-align: center;
+    }
+    label {
+      display: block;
+      margin-top: 20px;
+      font-weight: bold;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    button {
+      margin-top: 30px;
+      width: 100%;
+      padding: 12px;
+      background-color: #009688;
+      color: white;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+    }
+    .info {
+      margin-top: 30px;
+      font-size: 14px;
+      color: #ccc;
+      background: #111;
+      padding: 20px;
+      border-radius: 8px;
+    }
+    ul {
+      margin-top: 10px;
+    }
+    code {
+      background: #333;
+      padding: 2px 4px;
+      border-radius: 4px;
+      font-size: 13px;
+    }
   </style>
 </head>
 <body>
   <h1>Panta inneignarkort</h1>
-  <p>Þú greiðir 100.000 kr og færð rafrænt inneignarkort með 97.000 kr til notkunar í kerfinu.</p>
+  <p>Þú greiðir 100.000 kr og færð rafrænt inneignarkort með 97.000 kr til notkunar í lokaðri þjónustu.</p>
 
   <form action="thankyou.html" method="post">
     <label>Fullt nafn:
-      <input type="text" name="name" required>
+      <input type="text" name="name" required />
     </label>
 
     <label>Netfang:
-      <input type="email" name="email" required>
+      <input type="email" name="email" required />
     </label>
 
-    <label>Móttakandi inneignarkorts (t.d. kennitala eða notandi):
-      <input type="text" name="identifier" required>
+    <label>Fullt nafn eða netfang móttakanda inneignarkorts:
+      <input type="text" name="recipient" required />
     </label>
 
     <label>Athugasemd (valfrjálst):
@@ -39,13 +84,17 @@
 
   <div class="info">
     <p><strong>Greiðsluleiðbeiningar:</strong></p>
-    <p>Millifærðu 100.000 kr á eftirfarandi reikning:</p>
+    <p>Millifærðu 100.000 kr með <strong>Wise</strong> á eftirfarandi aðila:</p>
     <ul>
-      <li><strong>Banki:</strong> 0152-26-000123</li>
-      <li><strong>Kennitala:</strong> 000000-0000</li>
-      <li><strong>Skýring:</strong> Netfangið þitt eða kennitala</li>
+      <li><strong>Móttakandi:</strong> Ævar Ingi Pálsson</li>
+      <li><strong>Greiðslumáti:</strong> Wise (Transferwise)</li>
+      <li><strong>Wise notandanafn:</strong> <code>aevar@byggras.is</code></li>
+      <li><strong>Skýring:</strong> Netfangið þitt eða móttakandanafn</li>
     </ul>
-    <p>Eftir staðfestingu færðu inneignarkort með 97.000 kr skráð á viðkomandi aðila. 3% þjónustugjald er innifalið í verði.</p>
+    <p>
+      Eftir staðfestingu færðu inneignarkort með <strong>97.000 kr</strong> skráð á viðkomandi.  
+      3% þjónustugjald er innifalið í verði.
+    </p>
   </div>
 </body>
 </html>
