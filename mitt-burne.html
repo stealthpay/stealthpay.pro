@@ -56,14 +56,25 @@
 </head>
 <body>
   <div class="container">
-    <h1>Velkomin(n) í Burne</h1>
+    <h1>Velkomin(n), <span id="userName"></span></h1>
     <div class="wallet-info">
-      <p><strong>Burne veski:</strong> burneWallet_AF8273</p>
-      <p class="balance">Inneign: 0 kr</p>
+      <p><strong>Burne veski:</strong> <span id="walletId"></span></p>
+      <p class="balance" id="balance">0 kr</p>
     </div>
     <button onclick="alert('Bæta við inneign - í vinnslu')">Bæta við inneign</button>
     <button onclick="alert('Senda greiðslu - í vinnslu')">Senda greiðslu</button>
     <button onclick="alert('Fá greiðslu - í vinnslu')">Fá greiðslu / QR kóða</button>
   </div>
+
+  <script>
+    const user = JSON.parse(localStorage.getItem("burneUser"));
+    if (!user) {
+      window.location.href = "register.html";
+    } else {
+      document.getElementById("walletId").innerText = user.walletId;
+      document.getElementById("balance").innerText = user.balance + " kr";
+      document.getElementById("userName").innerText = user.name;
+    }
+  </script>
 </body>
 </html>
