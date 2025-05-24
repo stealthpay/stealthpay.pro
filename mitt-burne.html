@@ -79,7 +79,7 @@
   <div class="container">
     <h1 id="userName"></h1>
     <div class="wallet-id">
-      <code id="walletId">burneWallet_ABC123</code>
+      <code id="walletIdDisplay"></code>
       <button class="copy-btn" onclick="copyWalletId()">📋</button>
     </div>
     <img id="qrCode" width="200" height="200" />
@@ -90,7 +90,6 @@
     <button onclick="synaQRCode()">Fá greiðslu / QR kóða</button>
   </div>
 
-  <script src="https://unpkg.com/jsqr/dist/jsQR.js"></script>
   <script>
     let walletStore = JSON.parse(localStorage.getItem("walletStore")) || {};
     const user = JSON.parse(localStorage.getItem("burneUser"));
@@ -101,16 +100,19 @@
         walletStore[user.walletId] = { name: user.name, balance: user.balance };
         localStorage.setItem("walletStore", JSON.stringify(walletStore));
       }
-      document.getElementById("walletId").innerText = user.walletId;
       document.getElementById("userName").innerText = user.name;
+      document.getElementById("walletIdDisplay").innerText = user.walletId;
       document.getElementById("balance").innerText = formatAmount(walletStore[user.walletId].balance) + " SKR";
       document.getElementById("qrCode").src =
         "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" + encodeURIComponent(user.walletId);
     }
 
     function copyWalletId() {
-      navigator.clipboard.writeText(user.walletId).then(() => {
-        alert("Veski ID afritað!");
+      const wallet = user.walletId;
+      navigator.clipboard.writeText(wallet).then(() => {
+        alert("Veski ID afritað: " + wallet);
+      }).catch(() => {
+        prompt("Afritaðu veski ID:", wallet);
       });
     }
 
@@ -150,10 +152,8 @@
       const method = confirm("Viltu skanna QR kóða? (OK = Já, Cancel = Slá inn handvirkt)");
 
       if (method) {
-        startQRScan().then(toWallet => {
-          if (!toWallet) return;
-          inputAndSendAmount(toWallet);
-        });
+        alert("QR skönnun ekki virk í þessari útgáfu. Notaðu handvirkt.");
+        return;
       } else {
         const toWallet = prompt("Sláðu inn Burne veski viðtakanda (t.d. burneWallet_XYZ123)");
         if (toWallet) inputAndSendAmount(toWallet);
@@ -182,44 +182,6 @@
       localStorage.setItem("walletStore", JSON.stringify(walletStore));
       document.getElementById("balance").innerText = formatAmount(walletStore[user.walletId].balance) + " SKR";
       alert("Greiðsla send: " + formatAmount(amount) + " SKR til " + toWallet);
-    }
-
-    function startQRScan() {
-      return new Promise(resolve => {
-        const qrWin = window.open('', 'qrScan', 'width=400,height=450');
-        qrWin.document.write(`
-          <html><body style="background:#000;color:#fff;text-align:center;font-family:sans-serif;">
-          <h2>Skanna QR</h2>
-          <video id="video" width="300" height="300" autoplay style="margin-top:20px;"></video>
-          <script src="https://unpkg.com/jsqr/dist/jsQR.js"></script>
-          <script>
-            const video = document.getElementById('video');
-            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } }).then(stream => {
-              video.srcObject = stream;
-              const canvas = document.createElement('canvas');
-              const context = canvas.getContext('2d');
-              setInterval(() => {
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                context.drawImage(video, 0, 0, canvas.width, canvas.height);
-                const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-                const code = jsQR(imageData.data, canvas.width, canvas.height);
-                if (code) {
-                  stream.getTracks().forEach(track => track.stop());
-                  window.opener.postMessage({ qr: code.data }, '*');
-                  window.close();
-                }
-              }, 300);
-            });
-          <\/script></body></html>
-        `);
-
-        window.addEventListener("message", event => {
-          if (event.data.qr) {
-            resolve(event.data.qr);
-          }
-        }, { once: true });
-      });
     }
 
     function synaQRCode() {
