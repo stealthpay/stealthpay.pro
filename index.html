@@ -1,157 +1,90 @@
 <!DOCTYPE html>
 <html lang="is">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>StealthPay</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Burne API tenging</title>
   <style>
     body {
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
       background-color: #000;
       color: #fff;
-      font-family: Arial, sans-serif;
-      position: relative;
-    }
-
-    img {
-      max-width: 40%;
-      height: auto;
-    }
-
-    h1 {
-      margin-top: 20px;
-      font-size: 2rem;
+      font-family: sans-serif;
       text-align: center;
+      padding-top: 100px;
     }
-
-    a {
-      margin-top: 10px;
-      color: #00f;
-      text-decoration: underline;
-    }
-
-    .top-right {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      display: flex;
-      gap: 10px;
-    }
-
-    .bottom-right {
-      position: absolute;
-      bottom: 20px;
-      right: 20px;
-    }
-
-    .btn {
-      background-color: #222;
-      color: #fff;
-      border: 1px solid #555;
-      padding: 10px 16px;
-      border-radius: 5px;
-      cursor: pointer;
+    input, button {
+      padding: 10px;
+      margin: 10px;
       font-size: 1rem;
-      transition: all 0.2s ease-in-out;
     }
-
-    .btn:hover {
-      background-color: #444;
-    }
-
-    .btn.metamask {
-      background-color: #f6851b;
-      border: none;
-    }
-
-    .btn.metamask:hover {
-      background-color: #e2741d;
-    }
-
-    .btn.quick {
-      background-color: #444;
-    }
-
-    .btn.quick:hover {
-      background-color: #666;
-    }
-
-    .btn.xmr {
-      background-color: #2a2;
-      border: none;
-    }
-
-    .btn.xmr:hover {
-      background-color: #3c3;
-    }
-
-    .btn.pro {
-      background-color: #0055ff;
-      border: none;
-    }
-
-    .btn.pro:hover {
-      background-color: #3366ff;
+    .box {
+      background-color: #111;
+      padding: 20px;
+      border-radius: 10px;
+      display: inline-block;
     }
   </style>
 </head>
 <body>
-  <!-- Efri takkarnir -->
-  <div class="top-right">
-    <button id="quick-button" class="btn quick">Hraðskráning</button>
-    <button id="metamask-button" class="btn metamask">Connect MetaMask</button>
-    <button id="xmr-button" class="btn xmr">Fylltu á SKR</button>
-  </div>
+  <div class="box">
+    <h1>Burne demo tenging</h1>
 
-  <!-- Neðri takkinn -->
-  <div class="bottom-right">
-    <button id="pro-button" class="btn pro">Pro aðgangur</button>
-  </div>
+    <h3>📥 Skrá notanda</h3>
+    <input id="name" placeholder="Nafn..." />
+    <button onclick="register()">Búa til veski</button>
+    <p id="wallet"></p>
 
-  <!-- Miðjusvæði -->
-  <img src="logo.png" alt="StealthPay Logo" />
-  <h1>Project in Progress</h1>
-  <a href="mailto:info@stealthpay.pro">Contact Us: info@stealthpay.pro</a>
+    <h3>💸 Senda greiðslu</h3>
+    <input id="from" placeholder="Frá veski" />
+    <input id="to" placeholder="Til veski" />
+    <input id="amount" type="number" placeholder="Upphæð" />
+    <button onclick="send()">Senda</button>
+
+    <h3>🔎 Skoða veski</h3>
+    <input id="walletId" placeholder="Sláðu inn veski" />
+    <button onclick="fetchWallet()">Sækja upplýsingar</button>
+    <p id="info"></p>
+  </div>
 
   <script>
-    // MetaMask tenging
-    const metamaskButton = document.getElementById('metamask-button');
-    metamaskButton.addEventListener('click', async () => {
-      if (typeof window.ethereum !== 'undefined') {
-        try {
-          await window.ethereum.request({ method: 'eth_requestAccounts' });
-          alert('MetaMask tengdist með góðum árangri!');
-        } catch (error) {
-          console.error('Notandi hafnaði tengingu', error);
-        }
-      } else {
-        alert('MetaMask er ekki uppsett. Vinsamlegast settu það upp.');
-      }
-    });
+    function register() {
+      const name = document.getElementById("name").value;
+      fetch("http://localhost:3000/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name })
+      })
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById("wallet").innerText = `✅ Veski búið til: ${data.walletId}`;
+        });
+    }
 
-    // Hraðskráning
-    const quickButton = document.getElementById('quick-button');
-    quickButton.addEventListener('click', () => {
-      window.location.href = "register.html";
-    });
+    function send() {
+      const from = document.getElementById("from").value;
+      const to = document.getElementById("to").value;
+      const amount = parseInt(document.getElementById("amount").value);
+      fetch("http://localhost:3000/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ from, to, amount })
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) alert("✅ Greiðsla send!");
+          else alert("Villa: " + (data.error || "óþekkt villa"));
+        });
+    }
 
-    // Fylling með SKR
-    const xmrButton = document.getElementById('xmr-button');
-    xmrButton.addEventListener('click', () => {
-      window.location.href = "xmr-deposit.html";
-    });
-
-    // Pro aðgangur
-    const proButton = document.getElementById('pro-button');
-    proButton.addEventListener('click', () => {
-      window.location.href = "pro.html";
-    });
+    function fetchWallet() {
+      const id = document.getElementById("walletId").value;
+      fetch("http://localhost:3000/wallet/" + id)
+        .then(res => res.json())
+        .then(data => {
+          if (data.error) document.getElementById("info").innerText = "❌ " + data.error;
+          else document.getElementById("info").innerText = `👤 ${data.name}\n💰 ${data.balance} SKR`;
+        });
+    }
   </script>
 </body>
 </html>
