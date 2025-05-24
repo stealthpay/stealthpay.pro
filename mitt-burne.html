@@ -25,7 +25,7 @@
       text-align: center;
     }
     h1 {
-      margin-bottom: 0.5rem;
+      margin-bottom: 1rem;
       font-size: 1.8rem;
     }
     .wallet-id {
@@ -34,11 +34,21 @@
       align-items: center;
       gap: 0.5rem;
       margin-bottom: 1rem;
+      font-size: 0.9rem;
     }
-    .wallet-id span {
+    .wallet-id code {
       background-color: #222;
-      padding: 0.5rem 1rem;
+      padding: 0.4rem 0.8rem;
       border-radius: 6px;
+      font-family: monospace;
+      user-select: all;
+    }
+    .copy-btn {
+      background: none;
+      border: none;
+      color: #00c2a8;
+      font-size: 1.1rem;
+      cursor: pointer;
     }
     .balance {
       font-size: 1.5rem;
@@ -60,7 +70,8 @@
       background-color: #009f90;
     }
     #qrCode {
-      margin-top: 1rem;
+      margin: 1rem auto;
+      display: block;
     }
   </style>
 </head>
@@ -68,8 +79,8 @@
   <div class="container">
     <h1 id="userName"></h1>
     <div class="wallet-id">
-      <span id="walletId"></span>
-      <button onclick="copyWalletId()">Afrita</button>
+      <code id="walletId">burneWallet_ABC123</code>
+      <button class="copy-btn" onclick="copyWalletId()">📋</button>
     </div>
     <img id="qrCode" width="200" height="200" />
     <p class="balance" id="balance">0 SKR</p>
