@@ -1,69 +1,29 @@
 <!DOCTYPE html>
 <html lang="is">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mitt Burne</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mitt Burne – Demo (Real Bakendi)</title>
   <style>
     body {
       background-color: #000;
       color: #fff;
       font-family: sans-serif;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
+      text-align: center;
+      padding-top: 80px;
     }
-    .container {
-      max-width: 500px;
+    .wallet {
       background-color: #111;
       padding: 2rem;
       border-radius: 12px;
+      max-width: 400px;
+      margin: auto;
       box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
-      text-align: center;
-    }
-    h1 {
-      margin-bottom: 1rem;
-      font-size: 1.8rem;
-    }
-    .wallet-id {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 0.5rem;
-      margin-bottom: 1rem;
-      font-size: 0.9rem;
-    }
-    .wallet-id code {
-      background-color: #222;
-      padding: 0.4rem 0.8rem;
-      border-radius: 6px;
-      font-family: monospace;
-      user-select: all;
-    }
-    .copy-btn {
-      background: none;
-      border: none;
-      color: #00c2a8;
-      font-size: 1.1rem;
-      cursor: pointer;
-    }
-    .balance {
-      font-size: 1.5rem;
-      margin: 1rem 0;
-    }
-    .log {
-      margin-top: 1rem;
-      font-size: 0.9rem;
-      color: #aaa;
     }
     button {
-      display: block;
-      width: 100%;
-      padding: 0.75rem;
+      padding: 10px;
       margin-top: 1rem;
+      width: 80%;
       font-size: 1rem;
       background-color: #00c2a8;
       color: white;
@@ -74,110 +34,96 @@
     button:hover {
       background-color: #009f90;
     }
-    #qrCode {
-      margin: 1rem auto;
-      display: block;
+    .qr {
+      margin-top: 1rem;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1 id="userName"></h1>
-    <div class="wallet-id">
-      <code id="walletIdDisplay"></code>
-      <button class="copy-btn" onclick="copyWalletId()">📋</button>
+  <div class="wallet">
+    <h1 id="name"></h1>
+    <p><code id="walletId"></code> <button onclick="copyWalletId()">📋</button></p>
+    <div class="qr">
+      <img id="qrCode" width="200" height="200" />
     </div>
-    <img id="qrCode" width="200" height="200" />
-    <p class="balance" id="balance">0 SKR</p>
-
-    <button onclick="kaupaInneign()">Kaupa SKR inneign</button>
-    <button onclick="sendaGreidslu()">Senda greiðslu</button>
-    <button onclick="synaQRCode()">Fá greiðslu / QR kóða</button>
-    <div class="log" id="log"></div>
+    <h2 id="balance">0 SKR</h2>
+    <button onclick="kaupa()">Kaupa SKR inneign</button>
+    <button onclick="senda()">Senda greiðslu</button>
   </div>
 
   <script>
-    let walletStore = JSON.parse(localStorage.getItem("walletStore")) || {};
     const user = JSON.parse(localStorage.getItem("burneUser"));
+
     if (!user) {
-      window.location.href = "register.html";
-    } else {
-      if (!walletStore[user.walletId]) {
-        walletStore[user.walletId] = { name: user.name, balance: user.balance };
-        localStorage.setItem("walletStore", JSON.stringify(walletStore));
-      }
-      document.getElementById("userName").innerText = user.name;
-      document.getElementById("walletIdDisplay").innerText = user.walletId;
-      document.getElementById("balance").innerText = formatAmount(walletStore[user.walletId].balance) + " SKR";
-      document.getElementById("qrCode").src =
-        "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" + encodeURIComponent(user.walletId);
+      alert("Enginn notandi skráður");
+      throw new Error("No user");
     }
+
+    document.getElementById("name").innerText = user.name;
+    document.getElementById("walletId").innerText = user.walletId;
+    document.getElementById("qrCode").src =
+      "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" + encodeURIComponent(user.walletId);
 
     function copyWalletId() {
-      const wallet = user.walletId;
-      navigator.clipboard.writeText(wallet).then(() => {
-        alert("Veski ID afritað: " + wallet);
-      }).catch(() => {
-        prompt("Afritaðu veski ID:", wallet);
-      });
+      navigator.clipboard.writeText(user.walletId).then(() => alert("Afritað"));
     }
 
-    function formatAmount(amount) {
-      return amount.toLocaleString("is-IS");
+    function fetchBalance() {
+      fetch("http://localhost:3000/wallet/" + user.walletId)
+        .then(res => res.json())
+        .then(data => {
+          if (data.balance !== undefined) {
+            document.getElementById("balance").innerText = `${data.balance.toLocaleString("is-IS")} SKR`;
+          }
+        });
     }
 
-    function log(text) {
-      const l = document.getElementById("log");
-      const now = new Date().toLocaleTimeString();
-      l.innerHTML += `🕒 ${now} – ${text}<br/>`;
+    function kaupa() {
+      const kr = parseInt(prompt("Hversu mikla inneign viltu bæta við?"));
+      if (!kr || kr < 1) return;
+
+      fetch("http://localhost:3000/deposit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ walletId: user.walletId, amount: kr })
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            alert("✅ Inneign bætt við");
+            fetchBalance();
+          } else {
+            alert("❌ Villa: " + (data.error || "óþekkt"));
+          }
+        });
     }
 
-    function kaupaInneign() {
-      const upphaed = prompt("Hversu mikla inneign viltu kaupa? (í krónum)");
-      const kr = parseInt(upphaed);
-      if (!isNaN(kr) && kr > 0) {
-        const fee = Math.round(kr * 0.03);
-        const ramp = Math.round((kr + fee) * 0.015);
-        const total = kr + fee + ramp;
-        const staðfesta = confirm(`Inneign: ${formatAmount(kr)}\nGjald: ${formatAmount(fee)}\nRamp: ${formatAmount(ramp)}\nHeild: ${formatAmount(total)}\nHalda áfram?`);
-        if (staðfesta) {
-          walletStore[user.walletId].balance += kr;
-          localStorage.setItem("walletStore", JSON.stringify(walletStore));
-          document.getElementById("balance").innerText = formatAmount(walletStore[user.walletId].balance) + " SKR";
-          log(`Bætt við ${formatAmount(kr)} SKR`);
-        }
-      } else {
-        alert("Ógild upphæð");
-      }
-    }
-
-    function sendaGreidslu() {
-      const toWallet = prompt("Sláðu inn Burne veski viðtakanda:");
-      if (!toWallet || toWallet.length < 5) return alert("Ógilt veski-ID");
+    function senda() {
+      const to = prompt("Til hvaða veski viltu senda?");
       const amount = parseInt(prompt("Hversu mikið viltu senda? (í SKR)"));
-      if (!amount || isNaN(amount) || amount <= 0) return alert("Ógild upphæð");
-      if (!walletStore[toWallet]) {
-        const nafn = prompt("Viðtakandi fannst ekki. Sláðu inn nafn viðtakanda:");
-        if (!nafn) return alert("Hætt við greiðslu");
-        walletStore[toWallet] = { name: nafn, balance: 0 };
+      if (!to || !amount || isNaN(amount) || amount <= 0) {
+        alert("Ógild færsluupplýsingar");
+        return;
       }
-      if (walletStore[user.walletId].balance < amount) return alert("Ekki næg inneign");
-      walletStore[user.walletId].balance -= amount;
-      walletStore[toWallet].balance += amount;
-      localStorage.setItem("walletStore", JSON.stringify(walletStore));
-      document.getElementById("balance").innerText = formatAmount(walletStore[user.walletId].balance) + " SKR";
-      log(`Sent ${formatAmount(amount)} SKR til ${walletStore[toWallet].name || toWallet}`);
+
+      fetch("http://localhost:3000/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ from: user.walletId, to, amount })
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            alert("✅ Greiðsla send!");
+            fetchBalance();
+          } else {
+            alert("❌ Villa: " + (data.error || "óþekkt"));
+          }
+        });
     }
 
-    function synaQRCode() {
-      const content = user.walletId;
-      const qrWindow = window.open('', 'qrPopup', 'width=300,height=300');
-      qrWindow.document.write('<html><body style="background:#000;color:#fff;font-family:sans-serif;text-align:center;padding-top:50px;">');
-      qrWindow.document.write('<h2>Greiða á veski</h2>');
-      qrWindow.document.write('<p>' + content + '</p>');
-      qrWindow.document.write('<img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(content) + '" />');
-      qrWindow.document.write('</body></html>');
-    }
+    fetchBalance();
+    setInterval(fetchBalance, 5000);
   </script>
 </body>
 </html>
