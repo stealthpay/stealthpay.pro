@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="is">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mitt Burne – Demo (Real Bakendi)</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mitt Burne – Real Backend</title>
   <style>
     body {
       background-color: #000;
@@ -53,7 +53,6 @@
 
   <script>
     const user = JSON.parse(localStorage.getItem("burneUser"));
-
     if (!user) {
       alert("Enginn notandi skráður");
       throw new Error("No user");
