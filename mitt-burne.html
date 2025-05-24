@@ -54,6 +54,11 @@
       font-size: 1.5rem;
       margin: 1rem 0;
     }
+    .log {
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      color: #aaa;
+    }
     button {
       display: block;
       width: 100%;
@@ -88,6 +93,7 @@
     <button onclick="kaupaInneign()">Kaupa SKR inneign</button>
     <button onclick="sendaGreidslu()">Senda greiðslu</button>
     <button onclick="synaQRCode()">Fá greiðslu / QR kóða</button>
+    <div class="log" id="log"></div>
   </div>
 
   <script>
@@ -120,28 +126,25 @@
       return amount.toLocaleString("is-IS");
     }
 
+    function log(text) {
+      const l = document.getElementById("log");
+      const now = new Date().toLocaleTimeString();
+      l.innerHTML += `🕒 ${now} – ${text}<br/>`;
+    }
+
     function kaupaInneign() {
       const upphaed = prompt("Hversu mikla inneign viltu kaupa? (í krónum)");
       const kr = parseInt(upphaed);
-
       if (!isNaN(kr) && kr > 0) {
         const fee = Math.round(kr * 0.03);
         const ramp = Math.round((kr + fee) * 0.015);
         const total = kr + fee + ramp;
-
-        const staðfesta = confirm(
-          `Inneign: ${formatAmount(kr)} SKR\n` +
-          `StealthPay gjald (3%): ${formatAmount(fee)} kr\n` +
-          `Ramp fee (~1.5%): ${formatAmount(ramp)} kr\n` +
-          `Heildargreiðsla á kort: ${formatAmount(total)} kr\n\n` +
-          `Viltu halda áfram?`
-        );
-
+        const staðfesta = confirm(`Inneign: ${formatAmount(kr)}\nGjald: ${formatAmount(fee)}\nRamp: ${formatAmount(ramp)}\nHeild: ${formatAmount(total)}\nHalda áfram?`);
         if (staðfesta) {
           walletStore[user.walletId].balance += kr;
           localStorage.setItem("walletStore", JSON.stringify(walletStore));
           document.getElementById("balance").innerText = formatAmount(walletStore[user.walletId].balance) + " SKR";
-          alert(`Inneign bætt við: ${formatAmount(kr)} SKR`);
+          log(`Bætt við ${formatAmount(kr)} SKR`);
         }
       } else {
         alert("Ógild upphæð");
@@ -149,39 +152,21 @@
     }
 
     function sendaGreidslu() {
-      const method = confirm("Viltu skanna QR kóða? (OK = Já, Cancel = Slá inn handvirkt)");
-
-      if (method) {
-        alert("QR skönnun ekki virk í þessari útgáfu. Notaðu handvirkt.");
-        return;
-      } else {
-        const toWallet = prompt("Sláðu inn Burne veski viðtakanda (t.d. burneWallet_XYZ123)");
-        if (toWallet) inputAndSendAmount(toWallet);
-      }
-    }
-
-    function inputAndSendAmount(toWallet) {
+      const toWallet = prompt("Sláðu inn Burne veski viðtakanda:");
+      if (!toWallet || toWallet.length < 5) return alert("Ógilt veski-ID");
       const amount = parseInt(prompt("Hversu mikið viltu senda? (í SKR)"));
-      if (!toWallet || isNaN(amount) || amount <= 0) {
-        alert("Ógildar færslur");
-        return;
-      }
-
+      if (!amount || isNaN(amount) || amount <= 0) return alert("Ógild upphæð");
       if (!walletStore[toWallet]) {
-        alert("Viðtakandi fannst ekki");
-        return;
+        const nafn = prompt("Viðtakandi fannst ekki. Sláðu inn nafn viðtakanda:");
+        if (!nafn) return alert("Hætt við greiðslu");
+        walletStore[toWallet] = { name: nafn, balance: 0 };
       }
-
-      if (walletStore[user.walletId].balance < amount) {
-        alert("Ekki næg inneign");
-        return;
-      }
-
+      if (walletStore[user.walletId].balance < amount) return alert("Ekki næg inneign");
       walletStore[user.walletId].balance -= amount;
       walletStore[toWallet].balance += amount;
       localStorage.setItem("walletStore", JSON.stringify(walletStore));
       document.getElementById("balance").innerText = formatAmount(walletStore[user.walletId].balance) + " SKR";
-      alert("Greiðsla send: " + formatAmount(amount) + " SKR til " + toWallet);
+      log(`Sent ${formatAmount(amount)} SKR til ${walletStore[toWallet].name || toWallet}`);
     }
 
     function synaQRCode() {
