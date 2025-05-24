@@ -69,12 +69,17 @@
 
   <script src="https://unpkg.com/jsqr/dist/jsQR.js"></script>
   <script>
+    let walletStore = JSON.parse(localStorage.getItem("walletStore")) || {};
     const user = JSON.parse(localStorage.getItem("burneUser"));
     if (!user) {
       window.location.href = "register.html";
     } else {
+      if (!walletStore[user.walletId]) {
+        walletStore[user.walletId] = { name: user.name, balance: user.balance };
+        localStorage.setItem("walletStore", JSON.stringify(walletStore));
+      }
       document.getElementById("walletId").innerText = user.walletId;
-      document.getElementById("balance").innerText = user.balance + " SKR";
+      document.getElementById("balance").innerText = walletStore[user.walletId].balance + " SKR";
       document.getElementById("userName").innerText = user.name;
     }
 
@@ -96,9 +101,9 @@
         );
 
         if (staðfesta) {
-          user.balance += kr;
-          localStorage.setItem("burneUser", JSON.stringify(user));
-          document.getElementById("balance").innerText = user.balance + " SKR";
+          walletStore[user.walletId].balance += kr;
+          localStorage.setItem("walletStore", JSON.stringify(walletStore));
+          document.getElementById("balance").innerText = walletStore[user.walletId].balance + " SKR";
           alert(`Inneign bætt við: ${kr} SKR`);
         }
       } else {
@@ -127,14 +132,20 @@
         return;
       }
 
-      if (amount > user.balance) {
+      if (!walletStore[toWallet]) {
+        alert("Viðtakandi fannst ekki");
+        return;
+      }
+
+      if (walletStore[user.walletId].balance < amount) {
         alert("Ekki næg inneign");
         return;
       }
 
-      user.balance -= amount;
-      localStorage.setItem("burneUser", JSON.stringify(user));
-      document.getElementById("balance").innerText = user.balance + " SKR";
+      walletStore[user.walletId].balance -= amount;
+      walletStore[toWallet].balance += amount;
+      localStorage.setItem("walletStore", JSON.stringify(walletStore));
+      document.getElementById("balance").innerText = walletStore[user.walletId].balance + " SKR";
       alert("Greiðsla send: " + amount + " SKR til " + toWallet);
     }
 
