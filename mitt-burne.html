@@ -59,11 +59,12 @@
     <h1>Velkomin(n), <span id="userName"></span></h1>
     <div class="wallet-info">
       <p><strong>Burne veski:</strong> <span id="walletId"></span></p>
-      <p class="balance" id="balance">0 kr</p>
+      <p class="balance" id="balance">0 SKR</p>
     </div>
-    <button onclick="alert('Bæta við inneign – í vinnslu')">Bæta við inneign</button>
-    <button onclick="alert('Senda greiðslu – í vinnslu')">Senda greiðslu</button>
-    <button onclick="alert('Fá greiðslu – í vinnslu')">Fá greiðslu / QR kóða</button>
+
+    <button onclick="kaupaInneign()">Kaupa SKR inneign</button>
+    <button onclick="sendaGreidslu()">Senda greiðslu</button>
+    <button onclick="synaQRCode()">Fá greiðslu / QR kóða</button>
   </div>
 
   <script>
@@ -72,8 +73,50 @@
       window.location.href = "register.html";
     } else {
       document.getElementById("walletId").innerText = user.walletId;
-      document.getElementById("balance").innerText = user.balance + " kr";
+      document.getElementById("balance").innerText = user.balance + " SKR";
       document.getElementById("userName").innerText = user.name;
+    }
+
+    function kaupaInneign() {
+      const upphaed = prompt("Hversu mikla inneign viltu kaupa? (í krónum)");
+      const kr = parseInt(upphaed);
+      if (!isNaN(kr) && kr > 0) {
+        user.balance += kr;
+        localStorage.setItem("burneUser", JSON.stringify(user));
+        document.getElementById("balance").innerText = user.balance + " SKR";
+        alert("Inneign bætt við: " + kr + " SKR");
+      } else {
+        alert("Ógild upphæð");
+      }
+    }
+
+    function sendaGreidslu() {
+      const toWallet = prompt("Sláðu inn Burne veski viðtakanda (t.d. burneWallet_XYZ123)");
+      const amount = parseInt(prompt("Hversu mikið viltu senda? (í SKR)"));
+      if (!toWallet || isNaN(amount) || amount <= 0) {
+        alert("Ógildar færslur");
+        return;
+      }
+
+      if (amount > user.balance) {
+        alert("Ekki næg inneign");
+        return;
+      }
+
+      user.balance -= amount;
+      localStorage.setItem("burneUser", JSON.stringify(user));
+      document.getElementById("balance").innerText = user.balance + " SKR";
+      alert("Greiðsla send: " + amount + " SKR til " + toWallet);
+    }
+
+    function synaQRCode() {
+      const content = user.walletId;
+      const qrWindow = window.open('', 'qrPopup', 'width=300,height=300');
+      qrWindow.document.write('<html><body style="background:#000;color:#fff;font-family:sans-serif;text-align:center;padding-top:50px;">');
+      qrWindow.document.write('<h2>Greiða á veski</h2>');
+      qrWindow.document.write('<p>' + content + '</p>');
+      qrWindow.document.write('<img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(content) + '" />');
+      qrWindow.document.write('</body></html>');
     }
   </script>
 </body>
