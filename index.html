@@ -1,94 +1,51 @@
-<!DOCTYPE html>
-<html lang="is">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Burne API tenging – Demo Mode</title>
-  <style>
-    body {
-      background-color: #000;
-      color: #fff;
-      font-family: sans-serif;
-      text-align: center;
-      padding-top: 80px;
-    }
-    input, button {
-      padding: 10px;
-      margin: 10px;
-      font-size: 1rem;
-    }
-    .box {
-      background-color: #111;
-      padding: 20px;
-      border-radius: 10px;
-      display: inline-block;
-    }
-    .result {
-      color: #00e676;
-      margin-top: 10px;
-    }
-  </style>
-</head>
-<body>
-  <div class="box">
-    <h1>StealthPay demo tenging</h1>
+const express = require('express');
+const cors = require('cors');
+const fs = require('fs');
+const app = express();
+const FILE = './wallets.json';
 
-    <h3>📥 Búa til veski</h3>
-    <input id="name" placeholder="Sláðu inn nafn" />
-    <button onclick="register()">Búa til veski</button>
-    <p id="walletResult" class="result"></p>
+app.use(cors());
+app.use(express.json());
 
-    <h3>💸 Senda greiðslu</h3>
-    <input id="from" placeholder="Frá veski (t.d. burneWallet_ABC123)" />
-    <input id="to" placeholder="Til veski (t.d. burneWallet_DEF456)" />
-    <input id="amount" type="number" placeholder="Upphæð í SKR" />
-    <button onclick="send()">Senda</button>
+function loadWallets() {
+  if (!fs.existsSync(FILE)) fs.writeFileSync(FILE, '{}');
+  return JSON.parse(fs.readFileSync(FILE));
+}
 
-    <h3>🔍 Skoða veski</h3>
-    <input id="walletId" placeholder="Veski-ID sem á að skoða" />
-    <button onclick="fetchWallet()">Sækja upplýsingar</button>
-    <p id="info"></p>
-  </div>
+function saveWallets(data) {
+  fs.writeFileSync(FILE, JSON.stringify(data, null, 2));
+}
 
-  <script>
-    function register() {
-      const name = document.getElementById("name").value;
-      fetch("http://localhost:3000/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name })
-      })
-        .then(res => res.json())
-        .then(data => {
-          document.getElementById("walletResult").innerText = `✅ ${data.name} fékk veski: ${data.walletId}`;
-        });
-    }
+app.post('/register', (req, res) => {
+  const { name } = req.body;
+  const walletId = 'burneWallet_' + Math.random().toString(36).substr(2, 6).toUpperCase();
+  const wallets = loadWallets();
+  wallets[walletId] = { name, balance: 0 };
+  saveWallets(wallets);
+  res.json({ walletId, name, balance: 0 });
+});
 
-    function send() {
-      const from = document.getElementById("from").value;
-      const to = document.getElementById("to").value;
-      const amount = parseInt(document.getElementById("amount").value);
-      fetch("http://localhost:3000/send", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ from, to, amount })
-      })
-        .then(res => res.json())
-        .then(data => {
-          if (data.success) alert("✅ Greiðsla send!");
-          else alert("❌ Villa: " + (data.error || "óþekkt villa"));
-        });
-    }
+app.post('/send', (req, res) => {
+  const { from, to, amount } = req.body;
+  const wallets = loadWallets();
 
-    function fetchWallet() {
-      const id = document.getElementById("walletId").value;
-      fetch("http://localhost:3000/wallet/" + id)
-        .then(res => res.json())
-        .then(data => {
-          if (data.error) document.getElementById("info").innerText = "❌ " + data.error;
-          else document.getElementById("info").innerText = `👤 ${data.name}\n💰 ${data.balance.toLocaleString("is-IS")} SKR`;
-        });
-    }
-  </script>
-</body>
-</html>
+  if (!wallets[from]) return res.status(400).json({ error: "Sendandi fannst ekki" });
+  if (!wallets[to]) return res.status(400).json({ error: "Viðtakandi fannst ekki" });
+  if (wallets[from].balance < amount) return res.status(400).json({ error: "Ekki næg inneign" });
+
+  wallets[from].balance -= amount;
+  wallets[to].balance += amount;
+  saveWallets(wallets);
+  res.json({ success: true });
+});
+
+app.get('/wallet/:id', (req, res) => {
+  const wallets = loadWallets();
+  const wallet = wallets[req.params.id];
+  if (!wallet) return res.status(404).json({ error: "Veski fannst ekki" });
+  res.json(wallet);
+});
+
+app.listen(3000, () => {
+  console.log('✅ StealthPay backend running on http://localhost:3000');
+});
