@@ -80,11 +80,26 @@
     function kaupaInneign() {
       const upphaed = prompt("Hversu mikla inneign viltu kaupa? (í krónum)");
       const kr = parseInt(upphaed);
+
       if (!isNaN(kr) && kr > 0) {
-        user.balance += kr;
-        localStorage.setItem("burneUser", JSON.stringify(user));
-        document.getElementById("balance").innerText = user.balance + " SKR";
-        alert("Inneign bætt við: " + kr + " SKR");
+        const fee = Math.round(kr * 0.03);
+        const ramp = Math.round((kr + fee) * 0.015);
+        const total = kr + fee + ramp;
+
+        const staðfesta = confirm(
+          `Inneign: ${kr} SKR\n` +
+          `StealthPay gjald (3%): ${fee} kr\n` +
+          `Ramp fee (~1.5%): ${ramp} kr\n` +
+          `Heildargreiðsla á kort: ${total} kr\n\n` +
+          `Viltu halda áfram?`
+        );
+
+        if (staðfesta) {
+          user.balance += kr;
+          localStorage.setItem("burneUser", JSON.stringify(user));
+          document.getElementById("balance").innerText = user.balance + " SKR";
+          alert(`Inneign bætt við: ${kr} SKR`);
+        }
       } else {
         alert("Ógild upphæð");
       }
