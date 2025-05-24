@@ -8,49 +8,131 @@
     body {
       background-color: #000;
       color: #fff;
-      font-family: Arial, sans-serif;
+      font-family: sans-serif;
       margin: 0;
       padding: 0;
       display: flex;
-      flex-direction: column;
-      align-items: center;
       justify-content: center;
+      align-items: center;
       height: 100vh;
+    }
+    .container {
+      max-width: 500px;
+      background-color: #111;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
       text-align: center;
     }
-
     h1 {
-      font-size: 2.5rem;
-      margin-bottom: 20px;
+      margin-bottom: 1rem;
     }
-
-    p {
-      font-size: 1.2rem;
-      max-width: 500px;
-      margin-bottom: 30px;
+    .wallet-info {
+      background-color: #222;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1.5rem;
     }
-
-    .btn {
-      padding: 12px 24px;
+    .balance {
+      font-size: 1.5rem;
+      margin-top: 0.5rem;
+    }
+    button {
+      display: block;
+      width: 100%;
+      padding: 0.75rem;
+      margin-top: 1rem;
       font-size: 1rem;
-      background-color: #0055ff;
+      background-color: #00c2a8;
       color: white;
       border: none;
-      border-radius: 5px;
+      border-radius: 6px;
       cursor: pointer;
     }
-
-    .btn:hover {
-      background-color: #3366ff;
+    button:hover {
+      background-color: #009f90;
     }
   </style>
 </head>
 <body>
-  <h1>StealthPay Pro aðgangur</h1>
-  <p>
-    Þessi síða er fyrir fagnotendur sem vilja fá aðgang að dýpri virkni StealthPay, 
-    svo sem yfirlit yfir færslur, sendingu SKR, úttektir og fleira.
-  </p>
-  <button class="btn" onclick="window.location.href='index.html'">Til baka</button>
+  <div class="container">
+    <h1>Velkomin(n), <span id="userName"></span></h1>
+    <div class="wallet-info">
+      <p><strong>Burne veski:</strong> <span id="walletId"></span></p>
+      <p class="balance" id="balance">0 SKR</p>
+    </div>
+
+    <button onclick="kaupaInneign()">Kaupa SKR inneign</button>
+    <button onclick="sendaGreidslu()">Senda greiðslu</button>
+    <button onclick="synaQRCode()">Fá greiðslu / QR kóða</button>
+  </div>
+
+  <script>
+    const user = JSON.parse(localStorage.getItem("burneUser"));
+    if (!user) {
+      window.location.href = "register.html";
+    } else {
+      document.getElementById("walletId").innerText = user.walletId;
+      document.getElementById("balance").innerText = user.balance + " SKR";
+      document.getElementById("userName").innerText = user.name;
+    }
+
+    function kaupaInneign() {
+      const upphaed = prompt("Hversu mikla inneign viltu kaupa? (í krónum)");
+      const kr = parseInt(upphaed);
+
+      if (!isNaN(kr) && kr > 0) {
+        const fee = Math.round(kr * 0.03);
+        const ramp = Math.round((kr + fee) * 0.015);
+        const total = kr + fee + ramp;
+
+        const staðfesta = confirm(
+          `Inneign: ${kr} SKR\n` +
+          `StealthPay gjald (3%): ${fee} kr\n` +
+          `Ramp fee (~1.5%): ${ramp} kr\n` +
+          `Heildargreiðsla á kort: ${total} kr\n\n` +
+          `Viltu halda áfram?`
+        );
+
+        if (staðfesta) {
+          user.balance += kr;
+          localStorage.setItem("burneUser", JSON.stringify(user));
+          document.getElementById("balance").innerText = user.balance + " SKR";
+          alert(`Inneign bætt við: ${kr} SKR`);
+        }
+      } else {
+        alert("Ógild upphæð");
+      }
+    }
+
+    function sendaGreidslu() {
+      const toWallet = prompt("Sláðu inn Burne veski viðtakanda (t.d. burneWallet_XYZ123)");
+      const amount = parseInt(prompt("Hversu mikið viltu senda? (í SKR)"));
+      if (!toWallet || isNaN(amount) || amount <= 0) {
+        alert("Ógildar færslur");
+        return;
+      }
+
+      if (amount > user.balance) {
+        alert("Ekki næg inneign");
+        return;
+      }
+
+      user.balance -= amount;
+      localStorage.setItem("burneUser", JSON.stringify(user));
+      document.getElementById("balance").innerText = user.balance + " SKR";
+      alert("Greiðsla send: " + amount + " SKR til " + toWallet);
+    }
+
+    function synaQRCode() {
+      const content = user.walletId;
+      const qrWindow = window.open('', 'qrPopup', 'width=300,height=300');
+      qrWindow.document.write('<html><body style="background:#000;color:#fff;font-family:sans-serif;text-align:center;padding-top:50px;">');
+      qrWindow.document.write('<h2>Greiða á veski</h2>');
+      qrWindow.document.write('<p>' + content + '</p>');
+      qrWindow.document.write('<img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(content) + '" />');
+      qrWindow.document.write('</body></html>');
+    }
+  </script>
 </body>
 </html>
