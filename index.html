@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Burne API tenging</title>
+  <title>Burne API tenging – Demo Mode</title>
   <style>
     body {
       background-color: #000;
       color: #fff;
       font-family: sans-serif;
       text-align: center;
-      padding-top: 100px;
+      padding-top: 80px;
     }
     input, button {
       padding: 10px;
@@ -23,25 +23,29 @@
       border-radius: 10px;
       display: inline-block;
     }
+    .result {
+      color: #00e676;
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
   <div class="box">
-    <h1>Burne demo tenging</h1>
+    <h1>StealthPay demo tenging</h1>
 
-    <h3>📥 Skrá notanda</h3>
-    <input id="name" placeholder="Nafn..." />
+    <h3>📥 Búa til veski</h3>
+    <input id="name" placeholder="Sláðu inn nafn" />
     <button onclick="register()">Búa til veski</button>
-    <p id="wallet"></p>
+    <p id="walletResult" class="result"></p>
 
     <h3>💸 Senda greiðslu</h3>
-    <input id="from" placeholder="Frá veski" />
-    <input id="to" placeholder="Til veski" />
-    <input id="amount" type="number" placeholder="Upphæð" />
+    <input id="from" placeholder="Frá veski (t.d. burneWallet_ABC123)" />
+    <input id="to" placeholder="Til veski (t.d. burneWallet_DEF456)" />
+    <input id="amount" type="number" placeholder="Upphæð í SKR" />
     <button onclick="send()">Senda</button>
 
-    <h3>🔎 Skoða veski</h3>
-    <input id="walletId" placeholder="Sláðu inn veski" />
+    <h3>🔍 Skoða veski</h3>
+    <input id="walletId" placeholder="Veski-ID sem á að skoða" />
     <button onclick="fetchWallet()">Sækja upplýsingar</button>
     <p id="info"></p>
   </div>
@@ -56,7 +60,7 @@
       })
         .then(res => res.json())
         .then(data => {
-          document.getElementById("wallet").innerText = `✅ Veski búið til: ${data.walletId}`;
+          document.getElementById("walletResult").innerText = `✅ ${data.name} fékk veski: ${data.walletId}`;
         });
     }
 
@@ -72,7 +76,7 @@
         .then(res => res.json())
         .then(data => {
           if (data.success) alert("✅ Greiðsla send!");
-          else alert("Villa: " + (data.error || "óþekkt villa"));
+          else alert("❌ Villa: " + (data.error || "óþekkt villa"));
         });
     }
 
@@ -82,7 +86,7 @@
         .then(res => res.json())
         .then(data => {
           if (data.error) document.getElementById("info").innerText = "❌ " + data.error;
-          else document.getElementById("info").innerText = `👤 ${data.name}\n💰 ${data.balance} SKR`;
+          else document.getElementById("info").innerText = `👤 ${data.name}\n💰 ${data.balance.toLocaleString("is-IS")} SKR`;
         });
     }
   </script>
