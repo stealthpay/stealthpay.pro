@@ -25,17 +25,24 @@
       text-align: center;
     }
     h1 {
+      margin-bottom: 0.5rem;
+      font-size: 1.8rem;
+    }
+    .wallet-id {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.5rem;
       margin-bottom: 1rem;
     }
-    .wallet-info {
+    .wallet-id span {
       background-color: #222;
-      padding: 1rem;
-      border-radius: 8px;
-      margin-bottom: 1.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
     }
     .balance {
       font-size: 1.5rem;
-      margin-top: 0.5rem;
+      margin: 1rem 0;
     }
     button {
       display: block;
@@ -52,15 +59,20 @@
     button:hover {
       background-color: #009f90;
     }
+    #qrCode {
+      margin-top: 1rem;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Velkomin(n), <span id="userName"></span></h1>
-    <div class="wallet-info">
-      <p><strong>Burne veski:</strong> <span id="walletId"></span></p>
-      <p class="balance" id="balance">0 SKR</p>
+    <h1 id="userName"></h1>
+    <div class="wallet-id">
+      <span id="walletId"></span>
+      <button onclick="copyWalletId()">Afrita</button>
     </div>
+    <img id="qrCode" width="200" height="200" />
+    <p class="balance" id="balance">0 SKR</p>
 
     <button onclick="kaupaInneign()">Kaupa SKR inneign</button>
     <button onclick="sendaGreidslu()">Senda greiðslu</button>
@@ -79,8 +91,20 @@
         localStorage.setItem("walletStore", JSON.stringify(walletStore));
       }
       document.getElementById("walletId").innerText = user.walletId;
-      document.getElementById("balance").innerText = walletStore[user.walletId].balance + " SKR";
       document.getElementById("userName").innerText = user.name;
+      document.getElementById("balance").innerText = formatAmount(walletStore[user.walletId].balance) + " SKR";
+      document.getElementById("qrCode").src =
+        "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" + encodeURIComponent(user.walletId);
+    }
+
+    function copyWalletId() {
+      navigator.clipboard.writeText(user.walletId).then(() => {
+        alert("Veski ID afritað!");
+      });
+    }
+
+    function formatAmount(amount) {
+      return amount.toLocaleString("is-IS");
     }
 
     function kaupaInneign() {
@@ -93,18 +117,18 @@
         const total = kr + fee + ramp;
 
         const staðfesta = confirm(
-          `Inneign: ${kr} SKR\n` +
-          `StealthPay gjald (3%): ${fee} kr\n` +
-          `Ramp fee (~1.5%): ${ramp} kr\n` +
-          `Heildargreiðsla á kort: ${total} kr\n\n` +
+          `Inneign: ${formatAmount(kr)} SKR\n` +
+          `StealthPay gjald (3%): ${formatAmount(fee)} kr\n` +
+          `Ramp fee (~1.5%): ${formatAmount(ramp)} kr\n` +
+          `Heildargreiðsla á kort: ${formatAmount(total)} kr\n\n` +
           `Viltu halda áfram?`
         );
 
         if (staðfesta) {
           walletStore[user.walletId].balance += kr;
           localStorage.setItem("walletStore", JSON.stringify(walletStore));
-          document.getElementById("balance").innerText = walletStore[user.walletId].balance + " SKR";
-          alert(`Inneign bætt við: ${kr} SKR`);
+          document.getElementById("balance").innerText = formatAmount(walletStore[user.walletId].balance) + " SKR";
+          alert(`Inneign bætt við: ${formatAmount(kr)} SKR`);
         }
       } else {
         alert("Ógild upphæð");
@@ -145,8 +169,8 @@
       walletStore[user.walletId].balance -= amount;
       walletStore[toWallet].balance += amount;
       localStorage.setItem("walletStore", JSON.stringify(walletStore));
-      document.getElementById("balance").innerText = walletStore[user.walletId].balance + " SKR";
-      alert("Greiðsla send: " + amount + " SKR til " + toWallet);
+      document.getElementById("balance").innerText = formatAmount(walletStore[user.walletId].balance) + " SKR";
+      alert("Greiðsla send: " + formatAmount(amount) + " SKR til " + toWallet);
     }
 
     function startQRScan() {
