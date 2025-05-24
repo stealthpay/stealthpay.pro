@@ -1,51 +1,119 @@
-const express = require('express');
-const cors = require('cors');
-const fs = require('fs');
-const app = express();
-const FILE = './wallets.json';
+<!DOCTYPE html>
+<html lang="is">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mitt Burne (Auto Refresh)</title>
+  <style>
+    body {
+      background-color: #000;
+      color: #fff;
+      font-family: sans-serif;
+      text-align: center;
+      padding-top: 80px;
+    }
+    .wallet {
+      background-color: #111;
+      padding: 2rem;
+      border-radius: 12px;
+      max-width: 400px;
+      margin: auto;
+      box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+    }
+    button {
+      padding: 10px;
+      margin-top: 1rem;
+      width: 80%;
+      font-size: 1rem;
+      background-color: #00c2a8;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #009f90;
+    }
+    .qr {
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="wallet">
+    <h1 id="name"></h1>
+    <p><code id="walletId"></code> <button onclick="copyWalletId()">📋</button></p>
+    <div class="qr">
+      <img id="qrCode" width="200" height="200" />
+    </div>
+    <h2 id="balance">0 SKR</h2>
+    <button onclick="kaupa()">Kaupa SKR inneign</button>
+    <button onclick="senda()">Senda greiðslu</button>
+  </div>
 
-app.use(cors());
-app.use(express.json());
+  <script>
+    const user = JSON.parse(localStorage.getItem("burneUser"));
 
-function loadWallets() {
-  if (!fs.existsSync(FILE)) fs.writeFileSync(FILE, '{}');
-  return JSON.parse(fs.readFileSync(FILE));
-}
+    if (!user) {
+      alert("Enginn notandi skráður");
+      throw new Error("No user");
+    }
 
-function saveWallets(data) {
-  fs.writeFileSync(FILE, JSON.stringify(data, null, 2));
-}
+    document.getElementById("name").innerText = user.name;
+    document.getElementById("walletId").innerText = user.walletId;
+    document.getElementById("qrCode").src =
+      "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" + encodeURIComponent(user.walletId);
 
-app.post('/register', (req, res) => {
-  const { name } = req.body;
-  const walletId = 'burneWallet_' + Math.random().toString(36).substr(2, 6).toUpperCase();
-  const wallets = loadWallets();
-  wallets[walletId] = { name, balance: 0 };
-  saveWallets(wallets);
-  res.json({ walletId, name, balance: 0 });
-});
+    function copyWalletId() {
+      navigator.clipboard.writeText(user.walletId).then(() => alert("Afritað"));
+    }
 
-app.post('/send', (req, res) => {
-  const { from, to, amount } = req.body;
-  const wallets = loadWallets();
+    function fetchBalance() {
+      fetch("http://localhost:3000/wallet/" + user.walletId)
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById("balance").innerText = `${data.balance.toLocaleString("is-IS")} SKR`;
+        });
+    }
 
-  if (!wallets[from]) return res.status(400).json({ error: "Sendandi fannst ekki" });
-  if (!wallets[to]) return res.status(400).json({ error: "Viðtakandi fannst ekki" });
-  if (wallets[from].balance < amount) return res.status(400).json({ error: "Ekki næg inneign" });
+    function kaupa() {
+      const kr = parseInt(prompt("Hversu mikla inneign viltu bæta við?"));
+      if (!kr || kr < 1) return;
+      fetch("http://localhost:3000/wallet/" + user.walletId)
+        .then(res => res.json())
+        .then(data => {
+          data.balance += kr;
+          fetch("http://localhost:3000/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name: user.name })
+          });
+          alert("Inneign bætt við (demo)");
+          fetchBalance();
+        });
+    }
 
-  wallets[from].balance -= amount;
-  wallets[to].balance += amount;
-  saveWallets(wallets);
-  res.json({ success: true });
-});
+    function senda() {
+      const to = prompt("Til hvaða veski viltu senda?");
+      const amount = parseInt(prompt("Hversu mikið viltu senda? (í SKR)"));
+      fetch("http://localhost:3000/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ from: user.walletId, to, amount })
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            alert("Greiðsla send!");
+            fetchBalance();
+          } else {
+            alert("Villa: " + (data.error || "óþekkt"));
+          }
+        });
+    }
 
-app.get('/wallet/:id', (req, res) => {
-  const wallets = loadWallets();
-  const wallet = wallets[req.params.id];
-  if (!wallet) return res.status(404).json({ error: "Veski fannst ekki" });
-  res.json(wallet);
-});
-
-app.listen(3000, () => {
-  console.log('✅ StealthPay backend running on http://localhost:3000');
-});
+    fetchBalance();
+    setInterval(fetchBalance, 5000); // Uppfærir stöðu á 5 sek fresti
+  </script>
+</body>
+</html>
