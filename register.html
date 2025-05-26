@@ -1,71 +1,51 @@
 <!DOCTYPE html>
 <html lang="is">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Nýtt Burne veski</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Skrá nýjan notanda</title>
   <style>
     body {
-      background-color: #000;
-      color: #fff;
       font-family: sans-serif;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-    .box {
-      background-color: #111;
-      padding: 2rem;
-      border-radius: 12px;
-      box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+      background: #000;
+      color: #fff;
       text-align: center;
-      max-width: 400px;
-    }
-    h1 {
-      margin-bottom: 1rem;
+      padding: 100px 20px;
     }
     input {
-      padding: 0.75rem;
+      padding: 1rem;
       font-size: 1rem;
-      width: 100%;
+      width: 300px;
       margin-bottom: 1rem;
-      border-radius: 6px;
-      border: none;
     }
     button {
-      padding: 0.75rem;
-      width: 100%;
+      padding: 1rem 2rem;
       font-size: 1rem;
-      background-color: #00c2a8;
+      background: teal;
       color: white;
       border: none;
-      border-radius: 6px;
       cursor: pointer;
     }
-    button:hover {
-      background-color: #009f90;
+    #result {
+      margin-top: 2rem;
+      font-size: 1.2rem;
     }
   </style>
 </head>
 <body>
-  <div class="box">
-    <h1>Nýtt Burne veski</h1>
-    <input type="text" id="nameInput" placeholder="Fullt nafn" />
-    <button onclick="skra()">Búa til veski</button>
-  </div>
+  <h1>Skráðu þig</h1>
+  <input id="name" placeholder="Nafn þitt" />
+  <br />
+  <button onclick="skra()">Skrá</button>
+
+  <div id="result"></div>
 
   <script>
-    const API = "https://rumbling-maze-soccer.glitch.me"; // tenging við Glitch backend
+    const API = "https://rumbling-maze-soccer.glitch.me"; // ✅ rétt tenging
 
     function skra() {
-      const name = document.getElementById("nameInput").value.trim();
-      if (!name) {
-        alert("Vinsamlegast sláðu inn nafn");
-        return;
-      }
+      const name = document.getElementById("name").value.trim();
+      if (!name) return alert("Sláðu inn nafn");
 
       fetch(`${API}/register`, {
         method: "POST",
@@ -74,17 +54,13 @@
       })
         .then(res => res.json())
         .then(data => {
-          if (data.walletId) {
-            localStorage.setItem("burneUser", JSON.stringify(data));
-            alert("✅ Veski búið til!");
-            window.location.href = "mitt-burne.html";
-          } else {
-            alert("❌ Villa: Ekki tókst að búa til veski");
-          }
-        })
-        .catch(err => {
-          alert("Villa við skráningu");
-          console.error(err);
+          document.getElementById("result").innerHTML = `
+            ✅ Skráning tókst!<br />
+            <b>Wallet ID:</b><br />
+            <code>${data.walletId}</code><br />
+            <br />
+            Notaðu þetta ID í index.html eða mitt-burne.html
+          `;
         });
     }
   </script>
