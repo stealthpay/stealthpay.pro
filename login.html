@@ -3,50 +3,49 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Innskráning | StealthPay</title>
+  <title>Innskráning</title>
   <style>
     body {
-      background-color: #000;
-      color: #fff;
+      background: #000;
+      color: white;
       font-family: sans-serif;
       text-align: center;
       padding-top: 100px;
     }
-
     input {
+      display: block;
+      margin: 1rem auto;
       padding: 1rem;
       font-size: 1rem;
-      margin-bottom: 1rem;
       width: 250px;
     }
-
     button {
       padding: 1rem 2rem;
       font-size: 1rem;
-      background-color: #00c7b7;
-      color: #fff;
+      background: #00c7b7;
       border: none;
       border-radius: 6px;
+      color: white;
       cursor: pointer;
     }
   </style>
 </head>
 <body>
   <h1>Innskráning í StealthPay</h1>
-
-  <input id="email" type="email" placeholder="Netfang"><br>
-  <input id="password" type="password" placeholder="Lykilorð"><br>
-  <button onclick="login()">Innskrá</button>
+  <input id="email" placeholder="Netfang" />
+  <input id="password" placeholder="Lykilorð" type="password" />
+  <button onclick="innskra()">Innskrá</button>
 
   <script>
     const API = "https://rumbling-maze-soccer.glitch.me";
 
-    async function login() {
+    async function innskra() {
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value.trim();
 
       if (!email || !password) {
-        return alert("Vinsamlegast sláðu inn netfang og lykilorð");
+        alert("Vinsamlegast fylltu út bæði netfang og lykilorð");
+        return;
       }
 
       const res = await fetch(`${API}/login`, {
@@ -55,13 +54,15 @@
         body: JSON.stringify({ email, password })
       });
 
-      if (!res.ok) {
-        return alert("❌ Rangt netfang eða lykilorð");
-      }
-
       const data = await res.json();
-      localStorage.setItem("user", JSON.stringify(data));
-      window.location.href = "mitt-burne.html";
+
+      if (data.walletId) {
+        localStorage.setItem("user", JSON.stringify(data));
+        alert("✅ Innskráning tókst!");
+        window.location.href = "mitt-burne.html";
+      } else {
+        alert("❌ Ekki tókst að skrá notanda");
+      }
     }
   </script>
 </body>
