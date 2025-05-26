@@ -3,55 +3,58 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Index</title>
+  <title>StealthPay – Skráning</title>
+  <style>
+    body {
+      background: #000;
+      color: #fff;
+      font-family: sans-serif;
+      text-align: center;
+      padding-top: 100px;
+    }
+
+    input {
+      padding: 1rem;
+      font-size: 1rem;
+      width: 250px;
+    }
+
+    button {
+      padding: 1rem 2rem;
+      font-size: 1rem;
+      margin-top: 1rem;
+      background: #00c7b7;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      color: white;
+    }
+  </style>
 </head>
 <body>
-  <h1>Demo: Hækka inneign</h1>
-  <p id="balance">–</p>
-
-  <button onclick="kaupa()">Bæta við inneign</button>
+  <h1>Skráning í StealthPay</h1>
+  <p><input id="name" placeholder="Nafn þitt" /></p>
+  <p><button onclick="skra()">Skrá mig</button></p>
 
   <script>
-    const API = "https://rumbling-maze-soccer.glitch.me"; // ✅ rétt tenging
+    const API = "https://rumbling-maze-soccer.glitch.me";
 
-    const user = {
-      walletId: "burneWallet_DSGN93"
-    };
+    function skra() {
+      const name = document.getElementById("name").value;
+      if (!name) return alert("Sláðu inn nafn");
 
-    function fetchBalance() {
-      fetch(`${API}/wallet/${user.walletId}`)
+      fetch(`${API}/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name })
+      })
         .then(res => res.json())
-        .then(data => {
-          if (data.balance !== undefined) {
-            document.getElementById("balance").innerText =
-              `${data.balance.toLocaleString("is-IS")} SKR`;
-          }
+        .then(user => {
+          localStorage.setItem("user", JSON.stringify(user));
+          alert("✅ Skráning tókst!");
+          window.location.href = "mitt-burne.html";
         });
     }
-
-    function kaupa() {
-      const kr = parseInt(prompt("Hversu mikla inneign viltu bæta við?"));
-      if (!kr || kr < 1) return;
-
-      // Lesum núverandi veski og uppfærum
-      fetch(`${API}/wallet/${user.walletId}`)
-        .then(res => res.json())
-        .then(wallet => {
-          wallet.balance += kr;
-
-          // Skrifum aftur með POST /register
-          fetch(`${API}/register`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name: wallet.name })
-          });
-
-          alert("Demo: Inneign bætt við!");
-          fetchBalance();
-        });
-    }
-
-    fetchBalance();
   </script>
 </body>
 </html>
