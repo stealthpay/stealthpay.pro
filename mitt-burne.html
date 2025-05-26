@@ -46,11 +46,11 @@
 
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
   <script>
-    const API = "https://rumbling-maze-soccer.glitch.me"; // 👉 Glitch backend tenging
-
+    const API = "https://rumbling-maze-soccer.glitch.me"; // 👉 rétt tenging við Glitch backend
     let user = null;
 
-    fetch(API + "/register", {
+    // Skrá nýjan notanda
+    fetch(`${API}/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name: "Ævar" })
@@ -64,7 +64,9 @@
     })
     .catch(() => alert("⚠️ Gat ekki skráð notanda"));
 
+    // Sækja inneign
     function fetchBalance() {
+      if (!user) return;
       fetch(`${API}/wallet/${user.walletId}`)
         .then(res => res.json())
         .then(data => {
@@ -72,9 +74,10 @@
         });
     }
 
+    // Kaupa inneign
     function kaupa() {
       const kr = parseInt(prompt("Hversu mikla inneign viltu bæta við?"));
-      if (!user || !user.walletId || !kr || kr < 1) return alert("Notandi ekki til eða ógild upphæð");
+      if (!user || !kr || kr < 1) return;
       fetch(`${API}/deposit`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -91,10 +94,11 @@
       });
     }
 
+    // Senda greiðslu
     function sendaGreidslu() {
-      const toWallet = prompt("Sláðu inn Burne veski viðtakanda:");
+      const toWallet = prompt("Sláðu inn veskis ID viðtakanda (t.d. burneWallet_XXXX)");
       const amount = parseInt(prompt("Hversu mikið viltu senda? (í SKR)"));
-      if (!toWallet || !amount || amount < 1 || !user || !user.walletId) return;
+      if (!toWallet || !amount || amount < 1 || !user) return;
       fetch(`${API}/send`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
