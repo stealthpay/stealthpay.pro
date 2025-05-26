@@ -2,69 +2,121 @@
 <html lang="is">
 <head>
   <meta charset="UTF-8" />
+  <title>StealthPay PRO</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>StealthPay PRO – Skráning</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     body {
-      background-color: #000;
+      background: #000;
       color: #fff;
       font-family: sans-serif;
       text-align: center;
       padding-top: 100px;
     }
-    input {
-      padding: 1rem;
-      font-size: 1rem;
-      width: 250px;
-      margin-bottom: 1rem;
-      display: block;
-      margin-left: auto;
-      margin-right: auto;
-    }
+
     button {
       padding: 1rem 2rem;
       font-size: 1rem;
       background-color: #00c7b7;
       border: none;
       border-radius: 6px;
-      cursor: pointer;
+      margin: 0.5rem;
       color: white;
+      cursor: pointer;
+    }
+
+    #qrcode {
+      margin: 1rem auto;
+      background: white;
+      padding: 1rem;
     }
   </style>
 </head>
 <body>
-  <h1>PRO Skráning í StealthPay</h1>
 
-  <input id="name" placeholder="Nafn þitt" />
-  <input id="email" placeholder="Netfang þitt" type="email" />
+  <h1 id="user-name">Nafn</h1>
+  <p id="user-email">Netfang</p>
+  <p>
+    <span id="wallet-id">burneWallet_XXXX</span>
+    <button onclick="copyWalletId()">Afrita</button>
+  </p>
 
-  <button onclick="register()">Skrá mig</button>
+  <div id="qrcode"></div>
+
+  <h2 id="balance">0 SKR</h2>
+
+  <button onclick="kaupa()">Kaupa SKR</button>
+  <button onclick="senda()">Senda greiðslu</button>
 
   <script>
     const API = "https://rumbling-maze-soccer.glitch.me";
+    const user = JSON.parse(localStorage.getItem("user"));
 
-    function register() {
-      const name = document.getElementById("name").value;
-      const email = document.getElementById("email").value;
-
-      if (!name || !email) {
-        alert("Vinsamlegast fylltu út bæði nafn og netfang");
-        return;
-      }
-
-      fetch(`${API}/register`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ name, email })
-      })
-        .then(res => res.json())
-        .then(user => {
-          localStorage.setItem("user", JSON.stringify(user));
-          window.location.href = "mitt-burne.html";
-        });
+    if (!user) {
+      alert("Enginn notandi skráður");
+      location.href = "login.html";
     }
+
+    document.getElementById("user-name").innerText = user.name;
+    document.getElementById("user-email").innerText = user.email;
+    document.getElementById("wallet-id").innerText = user.walletId;
+
+    new QRCode(document.getElementById("qrcode"), user.walletId);
+
+    function copyWalletId() {
+      navigator.clipboard.writeText(user.walletId)
+        .then(() => alert("✅ Afritað!"))
+        .catch(() => alert("❌ Ekki tókst að afrita"));
+    }
+
+    async function fetchBalance() {
+      const res = await fetch(`${API}/wallet/${user.walletId}`);
+      const data = await res.json();
+      document.getElementById("balance").innerText =
+        `${data.balance.toLocaleString("is-IS")} SKR`;
+    }
+
+    async function kaupa() {
+      const kr = parseInt(prompt("Hversu mikið viltu kaupa?"));
+      if (!kr || kr < 1) return;
+
+      const res = await fetch(`${API}/deposit`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ walletId: user.walletId, amount: kr })
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        alert("✅ Inneign bætt við");
+        fetchBalance();
+      } else {
+        alert("❌ Villa: " + (data.error || "Óþekkt"));
+      }
+    }
+
+    async function senda() {
+      const to = prompt("Veski viðtakanda (t.d. burneWallet_XXXX):");
+      const amount = parseInt(prompt("Hversu mikið viltu senda?"));
+
+      if (!to || !amount || amount < 1) return;
+
+      const res = await fetch(`${API}/send`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ from: user.walletId, to, amount })
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        alert(`✅ Sent ${amount} SKR`);
+        fetchBalance();
+      } else {
+        alert("❌ Villa: " + (data.error || "Óþekkt"));
+      }
+    }
+
+    fetchBalance();
   </script>
 </body>
 </html>
