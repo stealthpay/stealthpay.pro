@@ -13,7 +13,6 @@
       text-align: center;
       padding-top: 100px;
     }
-
     button {
       padding: 1rem 2rem;
       font-size: 1rem;
@@ -24,7 +23,6 @@
       color: white;
       cursor: pointer;
     }
-
     #qrcode {
       margin: 1rem auto;
       background: white;
@@ -45,8 +43,9 @@
 
   <h2 id="balance">0 SKR</h2>
 
-  <button onclick="kaupa()">Kaupa SKR</button>
+  <button onclick="kaupa()">Kaupa SKR inneign</button>
   <button onclick="senda()">Senda greiðslu</button>
+  <button onclick="logout()">Logout</button>
 
   <script>
     const API = "https://rumbling-maze-soccer.glitch.me";
@@ -66,7 +65,7 @@
     function copyWalletId() {
       navigator.clipboard.writeText(user.walletId)
         .then(() => alert("✅ Afritað!"))
-        .catch(() => alert("❌ Ekki tókst að afrita"));
+        .catch(() => alert("❌ Villa við afritun"));
     }
 
     async function fetchBalance() {
@@ -114,6 +113,11 @@
       } else {
         alert("❌ Villa: " + (data.error || "Óþekkt"));
       }
+    }
+
+    function logout() {
+      localStorage.removeItem("user");
+      location.href = "login.html";
     }
 
     fetchBalance();
