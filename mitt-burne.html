@@ -2,77 +2,55 @@
 <html lang="is">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mitt Burne</title>
+  <title>Mitt veski</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     body {
-      background-color: #000;
-      color: #fff;
+      background: black;
+      color: white;
       font-family: sans-serif;
       text-align: center;
-      padding-top: 80px;
+      padding-top: 100px;
     }
-
-    .container {
-      max-width: 500px;
-      background-color: #111;
-      padding: 2rem;
-      border-radius: 12px;
-      box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
-      margin: 0 auto;
-    }
-
-    h1 {
-      margin-bottom: 0.5rem;
-    }
-
-    #qrcode {
-      margin: 1rem auto;
-      width: 140px;
-      height: 140px;
-      background: white;
-    }
-
     button {
       padding: 1rem 2rem;
       font-size: 1rem;
       margin: 1rem;
-      background-color: #00c7b7;
+      background: #00c7b7;
+      color: white;
       border: none;
       border-radius: 8px;
       cursor: pointer;
-      color: white;
-    }
-
-    p {
-      margin: 0.5rem;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1 id="user-name">Nafn</h1>
-    <p id="user-email">Netfang</p>
-    <p>
-      <span id="wallet-id">burneWallet_XXXX</span>
-      <button onclick="copyWalletId()">Afrita</button>
-    </p>
-    <div id="qrcode"></div>
-    <h2 id="balance">0 SKR</h2>
-    <button onclick="kaupa()">Kaupa SKR inneign</button>
-    <button onclick="sendaGreidslu()">Senda greiðslu</button>
-  </div>
+  <h1 id="user-name">Nafn</h1>
+  <p id="user-email">Netfang</p>
+  <p>
+    <span id="wallet-id">Veski</span>
+    <button onclick="copyWalletId()">Afrita</button>
+  </p>
+  <div id="qrcode"></div>
+  <h2 id="balance">0 SKR</h2>
 
-  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+  <button onclick="kaupa()">Kaupa SKR inneign</button>
+  <button onclick="senda()">Senda greiðslu</button>
+
   <script>
-    const API = "https://rumbling-maze-soccer.glitch.me"; // 🔗 tenging við Glitch backend
+    const API = "https://rumbling-maze-soccer.glitch.me";
     const user = JSON.parse(localStorage.getItem("user"));
+
+    if (!user) {
+      alert("Ekki skráður inn");
+      window.location.href = "login.html";
+    }
 
     document.getElementById("user-name").innerText = user.name;
     document.getElementById("user-email").innerText = user.email;
     document.getElementById("wallet-id").innerText = user.walletId;
 
-    QRCode.toCanvas(document.getElementById('qrcode'), user.walletId);
+    new QRCode(document.getElementById("qrcode"), user.walletId);
 
     function copyWalletId() {
       navigator.clipboard.writeText(user.walletId)
@@ -80,59 +58,51 @@
         .catch(() => alert("❌ Villa við að afrita"));
     }
 
-    function fetchBalance() {
-      fetch(`${API}/wallet/${user.walletId}`)
-        .then(res => res.json())
-        .then(data => {
-          document.getElementById("balance").innerText =
-            formatAmount(data.balance) + " SKR";
-        });
+    async function fetchBalance() {
+      const res = await fetch(`${API}/wallet/${user.walletId}`);
+      const data = await res.json();
+      document.getElementById("balance").innerText =
+        `${data.balance.toLocaleString("is-IS")} SKR`;
     }
 
-    function formatAmount(number) {
-      return number.toLocaleString("is-IS");
-    }
+    async function kaupa() {
+      const kr = parseInt(prompt("Hversu mikla inneign viltu kaupa?"));
+      if (!kr || kr < 1) return;
 
-    function kaupa() {
-      const amount = parseInt(prompt("Hversu mikið viltu kaupa?"));
-      if (!amount || amount < 1) return;
-
-      fetch(`${API}/deposit`, {
+      const res = await fetch(`${API}/deposit`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ walletId: user.walletId, amount })
-      })
-        .then(res => res.json())
-        .then(data => {
-          if (data.success) {
-            alert(`✅ Inneign bætt við!`);
-            fetchBalance();
-          } else {
-            alert(`❌ Villa: ` + (data.error || "Óþekkt"));
-          }
-        });
+        body: JSON.stringify({ walletId: user.walletId, amount: kr })
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        alert("✅ Inneign bætt við");
+        fetchBalance();
+      } else {
+        alert("❌ Villa: " + (data.error || "Óþekkt"));
+      }
     }
 
-    function sendaGreidslu() {
-      const toWallet = prompt("Sláðu inn veskis ID viðtakanda (t.d. burneWallet_XXXX)");
-      const amount = parseInt(prompt("Hversu mikið viltu senda? (í SKR)"));
-      if (!toWallet || !amount || amount < 1 || !user) return;
+    async function senda() {
+      const to = prompt("Sláðu inn veski viðtakanda (burneWallet_XXXX):");
+      const amount = parseInt(prompt("Hversu mikið viltu senda?"));
 
-      fetch(`${API}/send`, {
+      if (!to || !amount || amount < 1) return;
+
+      const res = await fetch(`${API}/send`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ from: user.walletId, to: toWallet, amount })
-      })
-        .then(res => res.json())
-        .then(data => {
-          if (data.success) {
-            alert(`✅ Greiðsla send: ${amount} SKR`);
-            fetchBalance();
-            console.log(`📧 Senda kvittun á ${user.email} um greiðslu`);
-          } else {
-            alert(`❌ Villa: ` + (data.error || "Óþekkt"));
-          }
-        });
+        body: JSON.stringify({ from: user.walletId, to, amount })
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        alert(`✅ Sendi ${amount} SKR`);
+        fetchBalance();
+      } else {
+        alert("❌ Villa: " + (data.error || "Óþekkt"));
+      }
     }
 
     fetchBalance();
