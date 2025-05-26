@@ -12,14 +12,12 @@
       text-align: center;
       padding-top: 100px;
     }
-
     .wallet {
       background-color: #111;
       padding: 20px;
       border-radius: 12px;
       display: inline-block;
     }
-
     button {
       padding: 1rem 2rem;
       font-size: 1rem;
@@ -30,100 +28,88 @@
       border-radius: 8px;
       cursor: pointer;
     }
-
     #qrcode {
       margin: 1rem auto;
     }
   </style>
 </head>
 <body>
+
   <div class="wallet">
     <h1>Ævar</h1>
-    <div id="walletId" style="margin-bottom: 10px; font-family: monospace;">burneWallet_XXXX</div>
+    <div id="walletId"></div>
     <div id="qrcode"></div>
-    <h2 id="balance">0 SKR</h2>
+    <div id="balance">0 SKR</div>
     <button onclick="kaupa()">Kaupa SKR inneign</button>
     <button onclick="sendaGreidslu()">Senda greiðslu</button>
   </div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
   <script>
-    const API = "https://rumbling-maze-soccer.glitch.me"; // 👉 tenging við Glitch backend
+    const API = "https://rumbling-maze-soccer.glitch.me"; // 👉 Glitch backend tenging
 
     let user = null;
 
-    async function registerUser() {
-      const res = await fetch(`${API}/register`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ name: "Ævar" })
-      });
-      const data = await res.json();
+    fetch(API + "/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: "Ævar" })
+    })
+    .then(res => res.json())
+    .then(data => {
       user = data;
       document.getElementById("walletId").innerText = user.walletId;
-
-      const qr = new QRious({
-        element: document.getElementById("qrcode"),
-        size: 200,
-        value: user.walletId
-      });
-
+      QRCode.toCanvas(document.getElementById("qrcode"), user.walletId);
       fetchBalance();
-    }
+    })
+    .catch(() => alert("⚠️ Gat ekki skráð notanda"));
 
     function fetchBalance() {
       fetch(`${API}/wallet/${user.walletId}`)
-        .then((res) => res.json())
-        .then((data) => {
+        .then(res => res.json())
+        .then(data => {
           document.getElementById("balance").innerText = data.balance + " SKR";
         });
     }
 
     function kaupa() {
       const kr = parseInt(prompt("Hversu mikla inneign viltu bæta við?"));
-      if (!kr || kr < 1) return;
-
+      if (!user || !user.walletId || !kr || kr < 1) return alert("Notandi ekki til eða ógild upphæð");
       fetch(`${API}/deposit`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ walletId: user.walletId, amount: kr })
       })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.success) {
-            alert("✅ Inneign bætt við!");
-            fetchBalance();
-          } else {
-            alert("❌ Villa: " + data.error || "Óþekkt villa");
-          }
-        });
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          alert("✅ Inneign bætt við!");
+          fetchBalance();
+        } else {
+          alert("❌ Villa: " + (data.error || "Óþekkt"));
+        }
+      });
     }
 
     function sendaGreidslu() {
-      const toWallet = prompt("Sláðu inn Burne veski viðtakanda (t.d. burneWallet_XYZ123)");
-      if (!toWallet) return;
+      const toWallet = prompt("Sláðu inn Burne veski viðtakanda:");
       const amount = parseInt(prompt("Hversu mikið viltu senda? (í SKR)"));
-      if (!amount || amount < 1) return;
-
+      if (!toWallet || !amount || amount < 1 || !user || !user.walletId) return;
       fetch(`${API}/send`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ from: user.walletId, to: toWallet, amount })
       })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.success) {
-            alert(`✅ Greiðsla send: ${amount} SKR`);
-            fetchBalance();
-          } else {
-            alert("❌ Villa: " + (data.error || "Óþekkt"));
-          }
-        });
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          alert(`✅ Greiðsla send: ${amount} SKR`);
+          fetchBalance();
+        } else {
+          alert("❌ Villa: " + (data.error || "Óþekkt"));
+        }
+      });
     }
-
-    registerUser(); // 👉 Byrja með því að skrá notanda
   </script>
 </body>
 </html>
