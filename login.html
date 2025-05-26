@@ -12,38 +12,41 @@
       text-align: center;
       padding-top: 100px;
     }
-    input, button {
-      display: block;
-      margin: 1rem auto;
+    input {
       padding: 1rem;
       font-size: 1rem;
-      width: 300px;
+      width: 250px;
+      margin: 10px 0;
     }
-    input { background: #eee; }
     button {
+      padding: 1rem 2rem;
+      font-size: 1rem;
       background: #00c7b7;
       border: none;
+      border-radius: 8px;
       color: white;
-      border-radius: 6px;
       cursor: pointer;
     }
   </style>
 </head>
 <body>
-  <h1>Innskráning í StealthPay</h1>
+  <h1>Innskráning</h1>
+
   <input id="email" placeholder="Netfang" />
-  <input id="password" placeholder="Lykilorð" type="password" />
-  <button onclick="login()">Skrá inn</button>
+  <br />
+  <input id="password" type="password" placeholder="Lykilorð" />
+  <br />
+  <button onclick="login()">Skrá mig inn</button>
 
   <script>
     const API = "https://rumbling-maze-soccer.glitch.me";
 
     async function login() {
       const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value;
+      const password = document.getElementById("password").value.trim();
 
       if (!email || !password) {
-        alert("Vinsamlegast sláðu inn netfang og lykilorð");
+        alert("Vantar netfang eða lykilorð");
         return;
       }
 
@@ -57,10 +60,10 @@
 
       if (data.walletId) {
         localStorage.setItem("user", JSON.stringify(data));
-        alert("Innskráning tókst!");
+        alert("Velkomin(n) aftur!");
         window.location.href = "mitt-burne.html";
       } else {
-        alert("Ekki tókst að skrá notanda");
+        alert("Villa: " + (data.error || "Óþekkt villa"));
       }
     }
   </script>
