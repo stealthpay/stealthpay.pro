@@ -15,8 +15,8 @@
     input {
       padding: 1rem;
       font-size: 1rem;
-      width: 300px;
-      margin-bottom: 1rem;
+      width: 250px;
+      margin: 10px 0;
     }
     button {
       padding: 1rem 2rem;
@@ -31,9 +31,13 @@
 </head>
 <body>
   <h1>Skráning í StealthPay</h1>
-  <input id="name" placeholder="Nafn þitt" /><br />
-  <input id="email" placeholder="Netfang" type="email" /><br />
-  <input id="password" placeholder="Lykilorð" type="password" /><br />
+
+  <input id="name" placeholder="Nafn þitt" />
+  <br />
+  <input id="email" placeholder="Netfang" />
+  <br />
+  <input id="password" type="password" placeholder="Lykilorð" />
+  <br />
   <button onclick="skra()">Skrá mig</button>
 
   <script>
@@ -42,10 +46,10 @@
     async function skra() {
       const name = document.getElementById("name").value.trim();
       const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value;
+      const password = document.getElementById("password").value.trim();
 
       if (!name || !email || !password) {
-        alert("Vinsamlegast fylltu út öll svæði");
+        alert("Vinsamlegast fylltu út allt");
         return;
       }
 
