@@ -3,109 +3,90 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Stofna aðgang – Burne</title>
+  <title>Nýtt Burne veski</title>
   <style>
     body {
       background-color: #000;
       color: #fff;
       font-family: sans-serif;
+      margin: 0;
+      padding: 0;
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
-      margin: 0;
     }
-    .container {
-      max-width: 400px;
-      width: 100%;
-      padding: 2rem;
+    .box {
       background-color: #111;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+      text-align: center;
+      max-width: 400px;
     }
     h1 {
-      text-align: center;
       margin-bottom: 1rem;
     }
-    label {
-      display: block;
-      margin-top: 1rem;
-      margin-bottom: 0.25rem;
-    }
     input {
+      padding: 0.75rem;
+      font-size: 1rem;
       width: 100%;
-      padding: 0.5rem;
+      margin-bottom: 1rem;
+      border-radius: 6px;
       border: none;
-      border-radius: 5px;
-      margin-bottom: 0.5rem;
     }
     button {
-      background-color: #00c2a8;
-      color: white;
       padding: 0.75rem;
       width: 100%;
-      border: none;
-      border-radius: 5px;
       font-size: 1rem;
-      margin-top: 1rem;
+      background-color: #00c2a8;
+      color: white;
+      border: none;
+      border-radius: 6px;
       cursor: pointer;
     }
     button:hover {
-      background-color: #00a391;
+      background-color: #009f90;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Stofna aðgang að Burne</h1>
-    <form>
-      <label for="name">Nafn:</label>
-      <input type="text" id="name" name="name" required>
-
-      <label for="email">Netfang:</label>
-      <input type="email" id="email" name="email" required>
-
-      <label for="password">Lykilorð:</label>
-      <input type="password" id="password" name="password" required>
-
-      <label for="confirm">Staðfesta lykilorð:</label>
-      <input type="password" id="confirm" name="confirm" required>
-
-      <button type="submit">Stofna aðgang</button>
-    </form>
+  <div class="box">
+    <h1>Nýtt Burne veski</h1>
+    <input type="text" id="nameInput" placeholder="Fullt nafn" />
+    <button onclick="skra()">Búa til veski</button>
   </div>
 
   <script>
-    if (localStorage.getItem('burneUser')) {
-      window.location.href = "mitt-burne.html";
-    }
+    const API = "https://rumbling-maze-soccer.glitch.me"; // tenging við Glitch backend
 
-    document.querySelector("form").addEventListener("submit", function(e) {
-      e.preventDefault();
-
-      const name = document.getElementById("name").value;
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-      const confirm = document.getElementById("confirm").value;
-
-      if (password !== confirm) {
-        alert("Lykilorð stemma ekki");
+    function skra() {
+      const name = document.getElementById("nameInput").value.trim();
+      if (!name) {
+        alert("Vinsamlegast sláðu inn nafn");
         return;
       }
 
-      const walletId = "burneWallet_" + Math.random().toString(36).substr(2, 6).toUpperCase();
-
-      const user = {
-        name,
-        email,
-        password,
-        walletId,
-        balance: 0
-      };
-
-      localStorage.setItem("burneUser", JSON.stringify(user));
-      window.location.href = "mitt-burne.html";
-    });
+      fetch(`${API}/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name })
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.walletId) {
+            localStorage.setItem("burneUser", JSON.stringify(data));
+            alert("✅ Veski búið til!");
+            window.location.href = "mitt-burne.html";
+          } else {
+            alert("❌ Villa: Ekki tókst að búa til veski");
+          }
+        })
+        .catch(err => {
+          alert("Villa við skráningu");
+          console.error(err);
+        });
+    }
   </script>
 </body>
 </html>
