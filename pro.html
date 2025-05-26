@@ -1,137 +1,69 @@
 <!DOCTYPE html>
 <html lang="is">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>StealthPay Pro</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StealthPay PRO – Skráning</title>
   <style>
     body {
       background-color: #000;
       color: #fff;
       font-family: sans-serif;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-    .container {
-      max-width: 500px;
-      background-color: #111;
-      padding: 2rem;
-      border-radius: 12px;
-      box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
       text-align: center;
+      padding-top: 100px;
     }
-    h1 {
-      margin-bottom: 1rem;
-    }
-    .wallet-info {
-      background-color: #222;
+    input {
       padding: 1rem;
-      border-radius: 8px;
-      margin-bottom: 1.5rem;
-    }
-    .balance {
-      font-size: 1.5rem;
-      margin-top: 0.5rem;
+      font-size: 1rem;
+      width: 250px;
+      margin-bottom: 1rem;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
     }
     button {
-      display: block;
-      width: 100%;
-      padding: 0.75rem;
-      margin-top: 1rem;
+      padding: 1rem 2rem;
       font-size: 1rem;
-      background-color: #00c2a8;
-      color: white;
+      background-color: #00c7b7;
       border: none;
       border-radius: 6px;
       cursor: pointer;
-    }
-    button:hover {
-      background-color: #009f90;
+      color: white;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Velkomin(n), <span id="userName"></span></h1>
-    <div class="wallet-info">
-      <p><strong>Burne veski:</strong> <span id="walletId"></span></p>
-      <p class="balance" id="balance">0 SKR</p>
-    </div>
+  <h1>PRO Skráning í StealthPay</h1>
 
-    <button onclick="kaupaInneign()">Kaupa SKR inneign</button>
-    <button onclick="sendaGreidslu()">Senda greiðslu</button>
-    <button onclick="synaQRCode()">Fá greiðslu / QR kóða</button>
-  </div>
+  <input id="name" placeholder="Nafn þitt" />
+  <input id="email" placeholder="Netfang þitt" type="email" />
+
+  <button onclick="register()">Skrá mig</button>
 
   <script>
-    const user = JSON.parse(localStorage.getItem("burneUser"));
-    if (!user) {
-      window.location.href = "register.html";
-    } else {
-      document.getElementById("walletId").innerText = user.walletId;
-      document.getElementById("balance").innerText = user.balance + " SKR";
-      document.getElementById("userName").innerText = user.name;
-    }
+    const API = "https://rumbling-maze-soccer.glitch.me";
 
-    function kaupaInneign() {
-      const upphaed = prompt("Hversu mikla inneign viltu kaupa? (í krónum)");
-      const kr = parseInt(upphaed);
+    function register() {
+      const name = document.getElementById("name").value;
+      const email = document.getElementById("email").value;
 
-      if (!isNaN(kr) && kr > 0) {
-        const fee = Math.round(kr * 0.03);
-        const ramp = Math.round((kr + fee) * 0.015);
-        const total = kr + fee + ramp;
-
-        const staðfesta = confirm(
-          `Inneign: ${kr} SKR\n` +
-          `StealthPay gjald (3%): ${fee} kr\n` +
-          `Ramp fee (~1.5%): ${ramp} kr\n` +
-          `Heildargreiðsla á kort: ${total} kr\n\n` +
-          `Viltu halda áfram?`
-        );
-
-        if (staðfesta) {
-          user.balance += kr;
-          localStorage.setItem("burneUser", JSON.stringify(user));
-          document.getElementById("balance").innerText = user.balance + " SKR";
-          alert(`Inneign bætt við: ${kr} SKR`);
-        }
-      } else {
-        alert("Ógild upphæð");
-      }
-    }
-
-    function sendaGreidslu() {
-      const toWallet = prompt("Sláðu inn Burne veski viðtakanda (t.d. burneWallet_XYZ123)");
-      const amount = parseInt(prompt("Hversu mikið viltu senda? (í SKR)"));
-      if (!toWallet || isNaN(amount) || amount <= 0) {
-        alert("Ógildar færslur");
+      if (!name || !email) {
+        alert("Vinsamlegast fylltu út bæði nafn og netfang");
         return;
       }
 
-      if (amount > user.balance) {
-        alert("Ekki næg inneign");
-        return;
-      }
-
-      user.balance -= amount;
-      localStorage.setItem("burneUser", JSON.stringify(user));
-      document.getElementById("balance").innerText = user.balance + " SKR";
-      alert("Greiðsla send: " + amount + " SKR til " + toWallet);
-    }
-
-    function synaQRCode() {
-      const content = user.walletId;
-      const qrWindow = window.open('', 'qrPopup', 'width=300,height=300');
-      qrWindow.document.write('<html><body style="background:#000;color:#fff;font-family:sans-serif;text-align:center;padding-top:50px;">');
-      qrWindow.document.write('<h2>Greiða á veski</h2>');
-      qrWindow.document.write('<p>' + content + '</p>');
-      qrWindow.document.write('<img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(content) + '" />');
-      qrWindow.document.write('</body></html>');
+      fetch(`${API}/register`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ name, email })
+      })
+        .then(res => res.json())
+        .then(user => {
+          localStorage.setItem("user", JSON.stringify(user));
+          window.location.href = "mitt-burne.html";
+        });
     }
   </script>
 </body>
