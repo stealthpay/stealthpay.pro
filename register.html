@@ -12,14 +12,13 @@
       text-align: center;
       padding-top: 100px;
     }
-
     input {
+      display: block;
+      margin: 1rem auto;
       padding: 1rem;
       font-size: 1rem;
       width: 250px;
-      margin: 0.5rem;
     }
-
     button {
       padding: 1rem 2rem;
       font-size: 1rem;
@@ -28,46 +27,46 @@
       border: none;
       border-radius: 8px;
       cursor: pointer;
-      margin-top: 1rem;
     }
   </style>
 </head>
 <body>
   <h1>Skráning í StealthPay</h1>
 
-  <form onsubmit="skra(event)">
-    <input id="name" placeholder="Nafn þitt" required /><br />
-    <input id="email" placeholder="Netfangið þitt" type="email" required /><br />
-    <button>Skrá mig</button>
-  </form>
+  <input id="name" placeholder="Nafn þitt" />
+  <input id="email" type="email" placeholder="Netfang" />
+  <input id="password" type="password" placeholder="Lykilorð" />
+
+  <button onclick="skra()">Skrá mig</button>
 
   <script>
-    const API = "https://rumbling-maze-soccer.glitch.me"; // 🔗 tenging við Glitch backend
+    const API = "https://rumbling-maze-soccer.glitch.me";
 
-    function skra(e) {
-      e.preventDefault();
-
+    async function skra() {
       const name = document.getElementById("name").value.trim();
       const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
 
-      fetch(`${API}/register`, {
+      if (!name || !email || !password) {
+        alert("Vinsamlegast fylltu út öll svæði");
+        return;
+      }
+
+      const res = await fetch(`${API}/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name })
-      })
-        .then(res => res.json())
-        .then(data => {
-          if (data.walletId) {
-            localStorage.setItem("user", JSON.stringify({
-              name,
-              email,
-              walletId: data.walletId
-            }));
-            location.href = "mitt-burne.html";
-          } else {
-            alert("Villa við skráningu");
-          }
-        });
+        body: JSON.stringify({ name, email, password })
+      });
+
+      const data = await res.json();
+
+      if (data.walletId) {
+        localStorage.setItem("user", JSON.stringify(data));
+        alert("Skráning tókst!");
+        window.location.href = "mitt-burne.html";
+      } else {
+        alert("Villa: " + (data.error || "Óþekkt villa"));
+      }
     }
   </script>
 </body>
