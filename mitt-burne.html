@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mitt veski</title>
+  <title>Mitt Burne</title>
   <style>
     body {
       background-color: #000;
@@ -12,59 +12,73 @@
       text-align: center;
       padding-top: 80px;
     }
-    .wallet {
+
+    .container {
+      max-width: 500px;
       background-color: #111;
-      padding: 20px;
+      padding: 2rem;
       border-radius: 12px;
-      display: inline-block;
+      box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+      margin: 0 auto;
     }
+
+    h1 {
+      margin-bottom: 0.5rem;
+    }
+
     #qrcode {
       margin: 1rem auto;
+      width: 140px;
+      height: 140px;
       background: white;
-      padding: 1rem;
-      display: inline-block;
     }
+
     button {
       padding: 1rem 2rem;
-      margin-top: 1rem;
       font-size: 1rem;
+      margin: 1rem;
       background-color: #00c7b7;
       border: none;
       border-radius: 8px;
-      color: white;
       cursor: pointer;
+      color: white;
+    }
+
+    p {
+      margin: 0.5rem;
     }
   </style>
 </head>
 <body>
-  <div class="wallet">
+  <div class="container">
     <h1 id="user-name">Nafn</h1>
     <p id="user-email">Netfang</p>
-
-    <button onclick="copyWalletId()">📋</button>
-
+    <p>
+      <span id="wallet-id">burneWallet_XXXX</span>
+      <button onclick="copyWalletId()">Afrita</button>
+    </p>
     <div id="qrcode"></div>
-
     <h2 id="balance">0 SKR</h2>
-
     <button onclick="kaupa()">Kaupa SKR inneign</button>
     <button onclick="sendaGreidslu()">Senda greiðslu</button>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
   <script>
-    const API = "https://rumbling-maze-soccer.glitch.me";
+    const API = "https://rumbling-maze-soccer.glitch.me"; // 🔗 tenging við Glitch backend
     const user = JSON.parse(localStorage.getItem("user"));
-
-    if (!user) {
-      alert("Enginn notandi skráður");
-      location.href = "index.html";
-    }
 
     document.getElementById("user-name").innerText = user.name;
     document.getElementById("user-email").innerText = user.email;
+    document.getElementById("wallet-id").innerText = user.walletId;
 
-    QRCode.toCanvas(document.getElementById("qrcode"), user.walletId);
+    QRCode.toCanvas(document.getElementById('qrcode'), user.walletId);
+
+    function copyWalletId() {
+      navigator.clipboard.writeText(user.walletId)
+        .then(() => alert("✅ Afritað!"))
+        .catch(() => alert("❌ Villa við að afrita"));
+    }
 
     function fetchBalance() {
       fetch(`${API}/wallet/${user.walletId}`)
@@ -75,12 +89,12 @@
         });
     }
 
-    function formatAmount(amount) {
-      return amount.toLocaleString("is-IS");
+    function formatAmount(number) {
+      return number.toLocaleString("is-IS");
     }
 
     function kaupa() {
-      const amount = parseInt(prompt("Hversu mikið viltu bæta við? (í SKR)"));
+      const amount = parseInt(prompt("Hversu mikið viltu kaupa?"));
       if (!amount || amount < 1) return;
 
       fetch(`${API}/deposit`, {
@@ -94,13 +108,13 @@
             alert(`✅ Inneign bætt við!`);
             fetchBalance();
           } else {
-            alert(`❌ Villa: ${data.error || "Óþekkt"}`);
+            alert(`❌ Villa: ` + (data.error || "Óþekkt"));
           }
         });
     }
 
     function sendaGreidslu() {
-      const toWallet = prompt("Sláðu inn veski viðtakanda (t.d. burneWallet_XXXX)");
+      const toWallet = prompt("Sláðu inn veskis ID viðtakanda (t.d. burneWallet_XXXX)");
       const amount = parseInt(prompt("Hversu mikið viltu senda? (í SKR)"));
       if (!toWallet || !amount || amount < 1 || !user) return;
 
@@ -116,13 +130,9 @@
             fetchBalance();
             console.log(`📧 Senda kvittun á ${user.email} um greiðslu`);
           } else {
-            alert(`❌ Villa: ${data.error || "Óþekkt"}`);
+            alert(`❌ Villa: ` + (data.error || "Óþekkt"));
           }
         });
-    }
-
-    function copyWalletId() {
-      navigator.clipboard.writeText(user.walletId);
     }
 
     fetchBalance();
