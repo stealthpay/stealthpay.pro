@@ -3,28 +3,70 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Skráning</title>
+  <title>Skráning í StealthPay</title>
+  <style>
+    body {
+      background-color: #000;
+      color: #fff;
+      font-family: sans-serif;
+      text-align: center;
+      padding-top: 100px;
+    }
+
+    input {
+      padding: 1rem;
+      font-size: 1rem;
+      width: 250px;
+      margin: 0.5rem;
+    }
+
+    button {
+      padding: 1rem 2rem;
+      font-size: 1rem;
+      background-color: #00c7b7;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 1rem;
+    }
+  </style>
 </head>
 <body>
-  <h1>Skráðu þig</h1>
-  <input id="name" placeholder="Nafn" />
-  <button onclick="skra()">Skrá mig</button>
+  <h1>Skráning í StealthPay</h1>
+
+  <form onsubmit="skra(event)">
+    <input id="name" placeholder="Nafn þitt" required /><br />
+    <input id="email" placeholder="Netfangið þitt" type="email" required /><br />
+    <button>Skrá mig</button>
+  </form>
 
   <script>
-    const API = "https://rumbling-maze-soccer.glitch.me"; // ⬅️ Skiptu út ef þú ert með annan backend
+    const API = "https://rumbling-maze-soccer.glitch.me"; // 🔗 tenging við Glitch backend
 
-    function skra() {
-      const name = document.getElementById("name").value;
+    function skra(e) {
+      e.preventDefault();
+
+      const name = document.getElementById("name").value.trim();
+      const email = document.getElementById("email").value.trim();
+
       fetch(`${API}/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name })
       })
         .then(res => res.json())
-        .then(user => {
-          localStorage.setItem("user", JSON.stringify(user));
-          alert("✅ Skráning tókst");
-          window.location.href = "mitt-burne.html"; // Farðu á app-viðmót
+        .then(data => {
+          if (data.walletId) {
+            localStorage.setItem("user", JSON.stringify({
+              name,
+              email,
+              walletId: data.walletId
+            }));
+            location.href = "mitt-burne.html";
+          } else {
+            alert("Villa við skráningu");
+          }
         });
     }
   </script>
