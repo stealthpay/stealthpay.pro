@@ -4,63 +4,125 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mitt veski</title>
+  <style>
+    body {
+      background-color: #000;
+      color: #fff;
+      font-family: sans-serif;
+      text-align: center;
+      padding-top: 80px;
+    }
+    .wallet {
+      background-color: #111;
+      padding: 20px;
+      border-radius: 12px;
+      display: inline-block;
+    }
+    #qrcode {
+      margin: 1rem auto;
+      background: white;
+      padding: 1rem;
+      display: inline-block;
+    }
+    button {
+      padding: 1rem 2rem;
+      margin-top: 1rem;
+      font-size: 1rem;
+      background-color: #00c7b7;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
-  <h1>Mitt veski</h1>
-  <p id="balance">0 SKR</p>
-  <button onclick="kaupa()">💰 Kaupa inneign</button>
-  <button onclick="senda()">➡️ Senda greiðslu</button>
+  <div class="wallet">
+    <h1 id="user-name">Nafn</h1>
+    <p id="user-email">Netfang</p>
 
+    <button onclick="copyWalletId()">📋</button>
+
+    <div id="qrcode"></div>
+
+    <h2 id="balance">0 SKR</h2>
+
+    <button onclick="kaupa()">Kaupa SKR inneign</button>
+    <button onclick="sendaGreidslu()">Senda greiðslu</button>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
   <script>
     const API = "https://rumbling-maze-soccer.glitch.me";
     const user = JSON.parse(localStorage.getItem("user"));
+
     if (!user) {
       alert("Enginn notandi skráður");
-      location.href = "register.html";
+      location.href = "index.html";
     }
+
+    document.getElementById("user-name").innerText = user.name;
+    document.getElementById("user-email").innerText = user.email;
+
+    QRCode.toCanvas(document.getElementById("qrcode"), user.walletId);
 
     function fetchBalance() {
       fetch(`${API}/wallet/${user.walletId}`)
         .then(res => res.json())
         .then(data => {
           document.getElementById("balance").innerText =
-            `${data.balance.toLocaleString("is-IS")} SKR`;
+            formatAmount(data.balance) + " SKR";
         });
     }
 
+    function formatAmount(amount) {
+      return amount.toLocaleString("is-IS");
+    }
+
     function kaupa() {
-      const amount = parseInt(prompt("Hversu mikla inneign viltu bæta við?"));
+      const amount = parseInt(prompt("Hversu mikið viltu bæta við? (í SKR)"));
       if (!amount || amount < 1) return;
+
       fetch(`${API}/deposit`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ walletId: user.walletId, amount })
       })
         .then(res => res.json())
-        .then(() => {
-          alert(`✅ Bætt við ${amount} SKR`);
-          fetchBalance();
+        .then(data => {
+          if (data.success) {
+            alert(`✅ Inneign bætt við!`);
+            fetchBalance();
+          } else {
+            alert(`❌ Villa: ${data.error || "Óþekkt"}`);
+          }
         });
     }
 
-    function senda() {
-      const to = prompt("Veski viðtakanda:");
-      const amount = parseInt(prompt("Upphæð til að senda:"));
-      if (!to || !amount || amount < 1) return;
+    function sendaGreidslu() {
+      const toWallet = prompt("Sláðu inn veski viðtakanda (t.d. burneWallet_XXXX)");
+      const amount = parseInt(prompt("Hversu mikið viltu senda? (í SKR)"));
+      if (!toWallet || !amount || amount < 1 || !user) return;
+
       fetch(`${API}/send`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ from: user.walletId, to, amount })
+        body: JSON.stringify({ from: user.walletId, to: toWallet, amount })
       })
         .then(res => res.json())
         .then(data => {
           if (data.success) {
-            alert(`✅ Sent ${amount} SKR`);
+            alert(`✅ Greiðsla send: ${amount} SKR`);
             fetchBalance();
+            console.log(`📧 Senda kvittun á ${user.email} um greiðslu`);
           } else {
-            alert("❌ Villa: " + (data.error || "Óþekkt"));
+            alert(`❌ Villa: ${data.error || "Óþekkt"}`);
           }
         });
+    }
+
+    function copyWalletId() {
+      navigator.clipboard.writeText(user.walletId);
     }
 
     fetchBalance();
