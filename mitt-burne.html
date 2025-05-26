@@ -3,120 +3,67 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mitt Burne</title>
-  <style>
-    body {
-      background-color: #000;
-      color: #fff;
-      font-family: sans-serif;
-      text-align: center;
-      padding-top: 100px;
-    }
-    .wallet {
-      background-color: #111;
-      padding: 20px;
-      border-radius: 12px;
-      display: inline-block;
-    }
-    button {
-      padding: 1rem 2rem;
-      font-size: 1rem;
-      margin-top: 1rem;
-      background-color: #00c7b7;
-      border: none;
-      color: white;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-    #qrcode {
-      margin: 1rem auto;
-    }
-  </style>
+  <title>Mitt veski</title>
 </head>
 <body>
+  <h1>Mitt veski</h1>
+  <p id="balance">0 SKR</p>
+  <button onclick="kaupa()">💰 Kaupa inneign</button>
+  <button onclick="senda()">➡️ Senda greiðslu</button>
 
-  <div class="wallet">
-    <h1>Ævar</h1>
-    <div id="walletId"></div>
-    <div id="qrcode"></div>
-    <div id="balance">0 SKR</div>
-    <button onclick="kaupa()">Kaupa SKR inneign</button>
-    <button onclick="sendaGreidslu()">Senda greiðslu</button>
-  </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
   <script>
-    const API = "https://rumbling-maze-soccer.glitch.me"; // 👉 rétt tenging við Glitch backend
-    let user = null;
+    const API = "https://rumbling-maze-soccer.glitch.me";
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (!user) {
+      alert("Enginn notandi skráður");
+      location.href = "register.html";
+    }
 
-    // Skrá nýjan notanda
-    fetch(`${API}/register`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: "Ævar" })
-    })
-    .then(res => res.json())
-    .then(data => {
-      user = data;
-      document.getElementById("walletId").innerText = user.walletId;
-      QRCode.toCanvas(document.getElementById("qrcode"), user.walletId);
-      fetchBalance();
-    })
-    .catch(() => alert("⚠️ Gat ekki skráð notanda"));
-
-    // Sækja inneign
     function fetchBalance() {
-      if (!user) return;
       fetch(`${API}/wallet/${user.walletId}`)
         .then(res => res.json())
         .then(data => {
-          document.getElementById("balance").innerText = data.balance + " SKR";
+          document.getElementById("balance").innerText =
+            `${data.balance.toLocaleString("is-IS")} SKR`;
         });
     }
 
-    // Kaupa inneign
     function kaupa() {
-      const kr = parseInt(prompt("Hversu mikla inneign viltu bæta við?"));
-      if (!user || !kr || kr < 1) return;
+      const amount = parseInt(prompt("Hversu mikla inneign viltu bæta við?"));
+      if (!amount || amount < 1) return;
       fetch(`${API}/deposit`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ walletId: user.walletId, amount: kr })
+        body: JSON.stringify({ walletId: user.walletId, amount })
       })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          alert("✅ Inneign bætt við!");
+        .then(res => res.json())
+        .then(() => {
+          alert(`✅ Bætt við ${amount} SKR`);
           fetchBalance();
-        } else {
-          alert("❌ Villa: " + (data.error || "Óþekkt"));
-        }
-      });
+        });
     }
 
-    // Senda greiðslu
-    function sendaGreidslu() {
-      const toWallet = prompt("Sláðu inn veskis ID viðtakanda (t.d. burneWallet_XXXX)");
-      const amount = parseInt(prompt("Hversu mikið viltu senda? (í SKR)"));
-      if (!toWallet || !amount || amount < 1 || !user) return;
+    function senda() {
+      const to = prompt("Veski viðtakanda:");
+      const amount = parseInt(prompt("Upphæð til að senda:"));
+      if (!to || !amount || amount < 1) return;
       fetch(`${API}/send`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ from: user.walletId, to: toWallet, amount })
+        body: JSON.stringify({ from: user.walletId, to, amount })
       })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          alert(`✅ Greiðsla send: ${amount} SKR`);
-          fetchBalance();
-        } else {
-          alert("❌ Villa: " + (data.error || "Óþekkt"));
-        }
-      });
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            alert(`✅ Sent ${amount} SKR`);
+            fetchBalance();
+          } else {
+            alert("❌ Villa: " + (data.error || "Óþekkt"));
+          }
+        });
     }
+
+    fetchBalance();
   </script>
-  <script>
-  const API = "https://rumbling-maze-soccer.glitch.me"; // 🔗 tenging við Glitch backend
-</script>
 </body>
 </html>
