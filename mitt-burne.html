@@ -2,116 +2,172 @@
 <html lang="is">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mitt Burne</title>
   <style>
     body {
       background-color: #000;
       color: #fff;
       font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .container {
+      max-width: 500px;
+      background-color: #111;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
       text-align: center;
-      padding-top: 80px;
     }
-    .wallet {
-      background: #111;
-      padding: 20px;
-      border-radius: 16px;
-      box-shadow: 0 0 20px #0ff3;
-      max-width: 320px;
-      margin: auto;
+    h1 {
+      margin-bottom: 1rem;
+      font-size: 1.8rem;
     }
-    .qr {
-      margin: 20px 0;
+    .wallet-id {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+    }
+    .wallet-id code {
+      background-color: #222;
+      padding: 0.4rem 0.8rem;
+      border-radius: 6px;
+      font-family: monospace;
+      user-select: all;
+    }
+    .copy-btn {
+      background: none;
+      border: none;
+      color: #00c2a8;
+      font-size: 1.1rem;
+      cursor: pointer;
+    }
+    .balance {
+      font-size: 1.5rem;
+      margin: 1rem 0;
     }
     button {
-      background: #00c2a8;
+      display: block;
+      width: 100%;
+      padding: 0.75rem;
+      margin-top: 1rem;
+      font-size: 1rem;
+      background-color: #00c2a8;
       color: white;
       border: none;
-      padding: 14px 20px;
-      margin: 10px 0;
-      border-radius: 8px;
-      width: 100%;
-      font-size: 16px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #009f90;
+    }
+    #qrCode {
+      margin: 1rem auto;
+      display: block;
     }
   </style>
 </head>
 <body>
-  <div class="wallet">
-    <h1>Ævar</h1>
-    <p id="walletId">burneWallet_DSGN93</p>
-    <button onclick="copyWallet()">📋</button>
-    <div class="qr">
-      <img id="qrCode" src="" width="200" />
+  <div class="container">
+    <h1 id="userName">Náfn</h1>
+    <div class="wallet-id">
+      <code id="walletId">burneWallet_ABC123</code>
+      <button class="copy-btn" onclick="copyWalletId()">📋</button>
     </div>
-    <p id="balance">0 SKR</p>
-    <button onclick="kaupa()">Kaupa SKR inneign</button>
-    <button onclick="senda()">Senda greiðslu</button>
+    <img id="qrCode" width="200" height="200" />
+    <p class="balance" id="balance">0 SKR</p>
+    <button onclick="kaupaInneign()">Kaupa SKR inneign</button>
+    <button onclick="sendaGreidslu()">Senda greiðslu</button>
   </div>
 
   <script>
-    const API = "https://rumbling-maze-soccer.glitch.me"; // 👈 rétt API
+    const API = "https://rumbling-maze-soccer.glitch.me"; // 🔗 tenging við Glitch server
 
-    const walletId = document.getElementById("walletId").innerText;
+    let walletStore = JSON.parse(localStorage.getItem("walletStore")) || {};
+    const user = JSON.parse(localStorage.getItem("burneUser"));
 
-    function copyWallet() {
-      navigator.clipboard.writeText(walletId);
-      alert("Afritað!");
-    }
-
-    function fetchBalance() {
-      fetch(`${API}/wallet/${walletId}`)
-        .then(res => res.json())
-        .then(data => {
-          document.getElementById("balance").innerText = `${data.balance} SKR`;
+    if (!user) {
+      window.location.href = "register.html";
+    } else {
+      fetch(`${API}/wallet/${user.walletId}`)
+        .then((res) => res.json())
+        .then((data) => {
+          document.getElementById("walletId").innerText = user.walletId;
+          document.getElementById("userName").innerText = user.name;
+          document.getElementById("balance").innerText = formatAmount(data.balance) + " SKR";
+          document.getElementById("qrCode").src =
+            "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" +
+            encodeURIComponent(user.walletId);
         });
     }
 
-    function kaupa() {
-      const amount = parseInt(prompt("Hversu mikla inneign viltu bæta við?"));
-      if (!amount || amount < 1) return;
-
-      fetch(`${API}/deposit`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ walletId, amount })
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          alert("Inneign bætt við!");
-          fetchBalance();
-        } else {
-          alert("Villa: " + (data.error || "Óþekkt"));
-        }
+    function copyWalletId() {
+      navigator.clipboard.writeText(user.walletId).then(() => {
+        alert("Veski afritað!");
       });
     }
 
-    function senda() {
-      const to = prompt("Sláðu inn viðtakanda veski (t.d. burneWallet_XYZ123)");
-      if (!to) return;
-      const amount = parseInt(prompt("Hversu mikið viltu senda?"));
+    function formatAmount(amount) {
+      return amount.toLocaleString("is-IS");
+    }
+
+    function kaupaInneign() {
+      const kr = parseInt(prompt("Hversu mikla inneign viltu bæta við?"));
+      if (!kr || kr < 1) return;
+      fetch(`${API}/deposit`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ walletId: user.walletId, amount: kr })
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success) {
+            alert("✅ Inneign bætt við!");
+            fetchBalance();
+          } else {
+            alert("❌ Villa: " + (data.error || "Óþekkt"));
+          }
+        });
+    }
+
+    function fetchBalance() {
+      fetch(`${API}/wallet/${user.walletId}`)
+        .then((res) => res.json())
+        .then((data) => {
+          document.getElementById("balance").innerText =
+            formatAmount(data.balance) + " SKR";
+        });
+    }
+
+    function sendaGreidslu() {
+      const toWallet = prompt("Sláðu inn Burne veski viðtakanda (t.d. burneWallet_XYZ123)");
+      if (!toWallet) return;
+      const amount = parseInt(prompt("Hversu mikið viltu senda? (í SKR)"));
       if (!amount || amount < 1) return;
 
       fetch(`${API}/send`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ from: walletId, to, amount })
+        body: JSON.stringify({ from: user.walletId, to: toWallet, amount })
       })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          alert("Greiðsla send!");
-          fetchBalance();
-        } else {
-          alert("Villa: " + (data.error || "Óþekkt"));
-        }
-      });
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success) {
+            alert(`✅ Greiðsla send: ${amount} SKR`);
+            fetchBalance();
+          } else {
+            alert("❌ Villa: " + (data.error || "Óþekkt"));
+          }
+        });
     }
-
-    // 👉 Búa til QR kóða
-    document.getElementById("qrCode").src =
-      `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${walletId}`;
-
-    fetchBalance(); // sýna balance
   </script>
 </body>
 </html>
