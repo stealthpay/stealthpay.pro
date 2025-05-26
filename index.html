@@ -6,53 +6,61 @@
   <title>StealthPay – Skráning</title>
   <style>
     body {
-      background: #000;
+      background-color: #000;
       color: #fff;
       font-family: sans-serif;
       text-align: center;
       padding-top: 100px;
     }
-
     input {
       padding: 1rem;
       font-size: 1rem;
       width: 250px;
+      display: block;
+      margin: 1rem auto;
     }
-
     button {
       padding: 1rem 2rem;
       font-size: 1rem;
-      margin-top: 1rem;
-      background: #00c7b7;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
+      background-color: #00c7b7;
       color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
   <h1>Skráning í StealthPay</h1>
-  <p><input id="name" placeholder="Nafn þitt" /></p>
-  <p><button onclick="skra()">Skrá mig</button></p>
+  <input type="text" id="name" placeholder="Nafn þitt" />
+  <input type="email" id="email" placeholder="Netfang" />
+  <button onclick="skra()">Skrá mig</button>
 
   <script>
     const API = "https://rumbling-maze-soccer.glitch.me";
 
     function skra() {
-      const name = document.getElementById("name").value;
-      if (!name) return alert("Sláðu inn nafn");
+      const name = document.getElementById("name").value.trim();
+      const email = document.getElementById("email").value.trim();
+      if (!name || !email) return alert("Vinsamlegast sláðu inn nafn og netfang");
 
       fetch(`${API}/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name })
+        body: JSON.stringify({ name, email })
       })
         .then(res => res.json())
-        .then(user => {
-          localStorage.setItem("user", JSON.stringify(user));
-          alert("✅ Skráning tókst!");
-          window.location.href = "mitt-burne.html";
+        .then(data => {
+          if (data.walletId) {
+            localStorage.setItem("user", JSON.stringify({
+              name,
+              email,
+              walletId: data.walletId
+            }));
+            location.href = "mitt-burne.html";
+          } else {
+            alert("Ekki tókst að skrá notanda");
+          }
         });
     }
   </script>
