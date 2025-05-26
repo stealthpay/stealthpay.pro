@@ -1,79 +1,30 @@
 <!DOCTYPE html>
 <html lang="is">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mitt Burne – Demo (Real Bakendi)</title>
-  <style>
-    body {
-      background-color: #000;
-      color: #fff;
-      font-family: sans-serif;
-      text-align: center;
-      padding-top: 80px;
-    }
-    .wallet {
-      background-color: #111;
-      padding: 2rem;
-      border-radius: 12px;
-      max-width: 400px;
-      margin: auto;
-      box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
-    }
-    button {
-      padding: 10px;
-      margin-top: 1rem;
-      width: 80%;
-      font-size: 1rem;
-      background-color: #00c2a8;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #009f90;
-    }
-    .qr {
-      margin-top: 1rem;
-    }
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Index</title>
 </head>
 <body>
-  <div class="wallet">
-    <h1 id="name"></h1>
-    <p><code id="walletId"></code> <button onclick="copyWalletId()">📋</button></p>
-    <div class="qr">
-      <img id="qrCode" width="200" height="200" />
-    </div>
-    <h2 id="balance">0 SKR</h2>
-    <button onclick="kaupa()">Kaupa SKR inneign</button>
-    <button onclick="senda()">Senda greiðslu</button>
-  </div>
+  <h1>Demo: Hækka inneign</h1>
+  <p id="balance">–</p>
+
+  <button onclick="kaupa()">Bæta við inneign</button>
 
   <script>
-    const user = JSON.parse(localStorage.getItem("burneUser"));
+    const API = "https://rumbling-maze-soccer.glitch.me"; // ✅ rétt tenging
 
-    if (!user) {
-      alert("Enginn notandi skráður");
-      throw new Error("No user");
-    }
-
-    document.getElementById("name").innerText = user.name;
-    document.getElementById("walletId").innerText = user.walletId;
-    document.getElementById("qrCode").src =
-      "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" + encodeURIComponent(user.walletId);
-
-    function copyWalletId() {
-      navigator.clipboard.writeText(user.walletId).then(() => alert("Afritað"));
-    }
+    const user = {
+      walletId: "burneWallet_DSGN93"
+    };
 
     function fetchBalance() {
-      fetch("http://localhost:3000/wallet/" + user.walletId)
+      fetch(`${API}/wallet/${user.walletId}`)
         .then(res => res.json())
         .then(data => {
           if (data.balance !== undefined) {
-            document.getElementById("balance").innerText = `${data.balance.toLocaleString("is-IS")} SKR`;
+            document.getElementById("balance").innerText =
+              `${data.balance.toLocaleString("is-IS")} SKR`;
           }
         });
     }
@@ -82,47 +33,25 @@
       const kr = parseInt(prompt("Hversu mikla inneign viltu bæta við?"));
       if (!kr || kr < 1) return;
 
-      // Þetta er demo: við lesum veskið, bætum við upphæð og skrifum til baka
-      fetch("http://localhost:3000/wallet/" + user.walletId)
+      // Lesum núverandi veski og uppfærum
+      fetch(`${API}/wallet/${user.walletId}`)
         .then(res => res.json())
         .then(wallet => {
           wallet.balance += kr;
-          fetch("http://localhost:3000/register", {
+
+          // Skrifum aftur með POST /register
+          fetch(`${API}/register`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ name: wallet.name })
           });
-          alert("Demo: Inneign bætt við");
+
+          alert("Demo: Inneign bætt við!");
           fetchBalance();
         });
     }
 
-    function senda() {
-      const to = prompt("Til hvaða veski viltu senda?");
-      const amount = parseInt(prompt("Hversu mikið viltu senda? (í SKR)"));
-      if (!to || !amount || isNaN(amount) || amount <= 0) {
-        alert("Ógild færsluupplýsingar");
-        return;
-      }
-
-      fetch("http://localhost:3000/send", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ from: user.walletId, to, amount })
-      })
-        .then(res => res.json())
-        .then(data => {
-          if (data.success) {
-            alert("✅ Greiðsla send!");
-            fetchBalance();
-          } else {
-            alert("❌ Villa: " + (data.error || "óþekkt"));
-          }
-        });
-    }
-
     fetchBalance();
-    setInterval(fetchBalance, 5000); // uppfærir stöðu sjálfkrafa
   </script>
 </body>
 </html>
