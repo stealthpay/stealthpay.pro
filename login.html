@@ -3,35 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Innskráning</title>
+  <title>Innskráning – StealthPay</title>
   <style>
-    body {
-      background: black;
-      color: white;
-      text-align: center;
-      font-family: sans-serif;
-      padding-top: 100px;
-    }
-    input {
-      padding: 1rem;
-      font-size: 1rem;
-      margin-bottom: 1rem;
-      width: 300px;
-    }
-    button {
-      padding: 1rem 2rem;
-      font-size: 1rem;
-      background-color: teal;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
+    body { background: #000; color: #fff; font-family: sans-serif; text-align: center; padding-top: 100px; }
+    input, button { padding: 1rem; font-size: 1rem; margin: 1rem; width: 250px; }
+    button { background: #00c7b7; border: none; color: #fff; cursor: pointer; border-radius: 6px; }
   </style>
 </head>
 <body>
   <h1>Innskráning í StealthPay</h1>
-  <input id="email" placeholder="Netfang" /><br />
-  <input id="password" type="password" placeholder="Lykilorð" /><br />
+  <input id="email" placeholder="Netfang" />
+  <input id="password" type="password" placeholder="Lykilorð" />
   <button onclick="login()">Innskrá</button>
 
   <script>
@@ -40,8 +22,6 @@
     async function login() {
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value;
-
-      if (!email || !password) return alert("Fylltu út netfang og lykilorð");
 
       const res = await fetch(`${API}/login`, {
         method: "POST",
@@ -53,9 +33,10 @@
 
       if (data.walletId) {
         localStorage.setItem("user", JSON.stringify(data));
+        alert("Velkomin(n) aftur!");
         window.location.href = "mitt-burne.html";
       } else {
-        alert("Ekki tókst að skrá notanda");
+        alert("Villa: " + (data.error || "Óþekkt villa"));
       }
     }
   </script>
