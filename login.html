@@ -6,49 +6,42 @@
   <title>Innskráning</title>
   <style>
     body {
-      background: #000;
-      color: #fff;
-      font-family: sans-serif;
+      background: black;
+      color: white;
       text-align: center;
+      font-family: sans-serif;
       padding-top: 100px;
     }
     input {
       padding: 1rem;
       font-size: 1rem;
-      width: 250px;
-      margin: 10px 0;
+      margin-bottom: 1rem;
+      width: 300px;
     }
     button {
       padding: 1rem 2rem;
       font-size: 1rem;
-      background: #00c7b7;
-      border: none;
-      border-radius: 8px;
+      background-color: teal;
       color: white;
+      border: none;
       cursor: pointer;
     }
   </style>
 </head>
 <body>
-  <h1>Innskráning</h1>
-
-  <input id="email" placeholder="Netfang" />
-  <br />
-  <input id="password" type="password" placeholder="Lykilorð" />
-  <br />
-  <button onclick="login()">Skrá mig inn</button>
+  <h1>Innskráning í StealthPay</h1>
+  <input id="email" placeholder="Netfang" /><br />
+  <input id="password" type="password" placeholder="Lykilorð" /><br />
+  <button onclick="login()">Innskrá</button>
 
   <script>
     const API = "https://rumbling-maze-soccer.glitch.me";
 
     async function login() {
       const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value.trim();
+      const password = document.getElementById("password").value;
 
-      if (!email || !password) {
-        alert("Vantar netfang eða lykilorð");
-        return;
-      }
+      if (!email || !password) return alert("Fylltu út netfang og lykilorð");
 
       const res = await fetch(`${API}/login`, {
         method: "POST",
@@ -60,10 +53,9 @@
 
       if (data.walletId) {
         localStorage.setItem("user", JSON.stringify(data));
-        alert("Velkomin(n) aftur!");
         window.location.href = "mitt-burne.html";
       } else {
-        alert("Villa: " + (data.error || "Óþekkt villa"));
+        alert("Ekki tókst að skrá notanda");
       }
     }
   </script>
