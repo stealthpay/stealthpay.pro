@@ -111,3 +111,4 @@ app.get("/", (req, res) => {
 app.listen(3000, () => {
   console.log("🚀 StealthPay keyrir á port 3000");
 });
+setup working backend
