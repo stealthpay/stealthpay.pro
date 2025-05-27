@@ -3,74 +3,49 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Veski mitt – StealthPay</title>
+  <title>Skráning í StealthPay (PRO)</title>
   <style>
-    body { background: #000; color: #fff; font-family: sans-serif; text-align: center; padding-top: 80px; }
-    button { padding: 1rem 2rem; font-size: 1rem; background: #00c7b7; border: none; border-radius: 6px; color: #fff; cursor: pointer; margin: 1rem; }
+    body { background: #000; color: #fff; font-family: sans-serif; text-align: center; padding-top: 100px; }
+    input, button { padding: 1rem; font-size: 1rem; margin: 1rem; width: 250px; }
+    button { background: #00c7b7; border: none; color: #fff; cursor: pointer; border-radius: 6px; }
   </style>
 </head>
 <body>
-  <h1 id="user-name">Nafn</h1>
-  <p id="user-email">Netfang</p>
-  <p>
-    <span id="wallet-id">...</span>
-    <button onclick="copyWalletId()">Afrita</button>
-  </p>
-  <h2 id="balance">0 SKR</h2>
-
-  <button onclick="kaupa()">Kaupa SKR inneign</button>
-  <button onclick="senda()">Senda greiðslu</button>
+  <h1>Skráning í StealthPay</h1>
+  <input id="name" placeholder="Nafn þitt" />
+  <input id="email" placeholder="Netfang" />
+  <input id="password" type="password" placeholder="Lykilorð" />
+  <button onclick="skra()">Skrá mig</button>
 
   <script>
     const API = "https://rumbling-maze-soccer.glitch.me";
-    const user = JSON.parse(localStorage.getItem("user"));
-    document.getElementById("user-name").innerText = user.name;
-    document.getElementById("user-email").innerText = user.email;
-    document.getElementById("wallet-id").innerText = user.walletId;
 
-    async function fetchBalance() {
-      const res = await fetch(`${API}/wallet/${user.walletId}`);
-      const data = await res.json();
-      document.getElementById("balance").innerText = `${data.balance.toLocaleString("is-IS")} SKR`;
-    }
+    async function skra() {
+      const name = document.getElementById("name").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
 
-    function copyWalletId() {
-      navigator.clipboard.writeText(user.walletId)
-        .then(() => alert("✅ Afritað!"))
-        .catch(() => alert("❌ Villa við að afrita"));
-    }
+      if (!name || !email || !password) {
+        alert("Vinsamlegast fylltu út öll svæði");
+        return;
+      }
 
-    async function kaupa() {
-      const kr = parseInt(prompt("Hversu mikla inneign viltu bæta við?"));
-      if (!kr || kr < 1) return;
-      await fetch(`${API}/send`, {
+      const res = await fetch(`${API}/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ from: user.walletId, to: user.walletId, amount: kr })
+        body: JSON.stringify({ name, email, password })
       });
-      alert("Inneign bætt við!");
-      fetchBalance();
-    }
 
-    async function senda() {
-      const to = prompt("Veski viðtakanda:");
-      const amount = parseInt(prompt("Upphæð til að senda:"));
-      if (!to || !amount || amount < 1) return;
-      const res = await fetch(`${API}/send`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ from: user.walletId, to, amount })
-      });
       const data = await res.json();
-      if (data.success) {
-        alert("✅ Greiðsla send!");
-        fetchBalance();
+
+      if (data.walletId) {
+        localStorage.setItem("user", JSON.stringify(data));
+        alert("Skráning tókst!");
+        window.location.href = "mitt-burne.html";
       } else {
-        alert("❌ Villa: " + (data.error || "Óþekkt villa"));
+        alert("Villa: " + (data.error || "Óþekkt villa"));
       }
     }
-
-    fetchBalance();
   </script>
 </body>
 </html>
