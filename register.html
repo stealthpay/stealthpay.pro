@@ -3,54 +3,31 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Skráning</title>
+  <title>Skráning í StealthPay</title>
   <style>
-    body {
-      background: black;
-      color: white;
-      text-align: center;
-      font-family: sans-serif;
-      padding-top: 100px;
-    }
-    input {
-      padding: 1rem;
-      font-size: 1rem;
-      margin-bottom: 1rem;
-      width: 300px;
-    }
-    button {
-      padding: 1rem 2rem;
-      font-size: 1rem;
-      background-color: teal;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
+    body { background: #000; color: #fff; font-family: sans-serif; text-align: center; padding-top: 100px; }
+    input, button { padding: 1rem; font-size: 1rem; margin: 1rem; width: 250px; }
+    button { background: #00c7b7; border: none; color: #fff; cursor: pointer; border-radius: 6px; }
   </style>
 </head>
 <body>
   <h1>Skráning í StealthPay</h1>
-  <input id="name" placeholder="Nafn þitt" /><br />
-  <input id="email" placeholder="Netfang" /><br />
-  <input id="password" type="password" placeholder="Lykilorð" /><br />
-  <input id="confirm" type="password" placeholder="Staðfesta lykilorð" /><br />
-  <button onclick="register()">Skrá mig</button>
+  <input id="name" placeholder="Nafn þitt" />
+  <input id="email" placeholder="Netfang" />
+  <input id="password" placeholder="Lykilorð" type="password" />
+  <button onclick="skra()">Skrá mig</button>
 
   <script>
     const API = "https://rumbling-maze-soccer.glitch.me";
 
-    async function register() {
+    async function skra() {
       const name = document.getElementById("name").value.trim();
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value;
-      const confirm = document.getElementById("confirm").value;
 
-      if (!name || !email || !password || !confirm) {
-        return alert("Vinsamlegast fylltu út öll svæði");
-      }
-
-      if (password !== confirm) {
-        return alert("Lykilorð stemma ekki");
+      if (!name || !email || !password) {
+        alert("Vinsamlegast fylltu út öll svæði");
+        return;
       }
 
       const res = await fetch(`${API}/register`, {
