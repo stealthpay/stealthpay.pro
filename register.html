@@ -5,45 +5,73 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Skráning í StealthPay</title>
   <style>
-    body { background: #000; color: #fff; font-family: sans-serif; text-align: center; padding-top: 100px; }
-    input, button { padding: 1rem; font-size: 1rem; margin: 1rem; width: 250px; }
-    button { background: #00c7b7; border: none; color: #fff; cursor: pointer; border-radius: 6px; }
+    body {
+      background: #000;
+      color: #fff;
+      font-family: sans-serif;
+      text-align: center;
+      padding-top: 100px;
+    }
+    input, button {
+      padding: 1rem;
+      font-size: 1rem;
+      margin: 1rem;
+      width: 250px;
+    }
+    button {
+      background: #00c7b7;
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      border-radius: 6px;
+    }
   </style>
 </head>
 <body>
   <h1>Skráning í StealthPay</h1>
+
   <input id="name" placeholder="Nafn þitt" />
   <input id="email" placeholder="Netfang" />
-  <input id="password" placeholder="Lykilorð" type="password" />
+  <input id="password" type="password" placeholder="Lykilorð" />
+  <input id="confirm" type="password" placeholder="Staðfesta lykilorð" />
   <button onclick="skra()">Skrá mig</button>
 
   <script>
-    const API = "https://rumbling-maze-soccer.glitch.me";
-
     async function skra() {
       const name = document.getElementById("name").value.trim();
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value;
+      const confirm = document.getElementById("confirm").value;
 
-      if (!name || !email || !password) {
-        alert("Vinsamlegast fylltu út öll svæði");
+      if (!name || !email || !password || !confirm) {
+        alert("⚠️ Vinsamlegast fylltu út öll svæði.");
         return;
       }
 
-      const res = await fetch(`${API}/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password })
-      });
+      if (password !== confirm) {
+        alert("❌ Lykilorðin stemma ekki.");
+        return;
+      }
 
-      const data = await res.json();
+      try {
+        const res = await fetch("https://stealthpay-backend.onrender.com/register", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ name, email, password })
+        });
 
-      if (data.walletId) {
-        localStorage.setItem("user", JSON.stringify(data));
-        alert("Skráning tókst!");
-        window.location.href = "mitt-burne.html";
-      } else {
-        alert("Villa: " + (data.error || "Óþekkt villa"));
+        const data = await res.json();
+
+        if (res.ok) {
+          alert(`✅ Velkomin(n) ${data.name}! Veski: ${data.walletId}`);
+        } else {
+          alert(`❌ Villa: ${data.error || 'Óþekkt villa'}`);
+        }
+      } catch (err) {
+        alert("❌ Gat ekki tengst netþjóni.");
+        console.error(err);
       }
     }
   </script>
