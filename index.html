@@ -10,7 +10,7 @@
       color: #fff;
       font-family: sans-serif;
       text-align: center;
-      padding: 60px;
+      padding: 40px;
     }
     input, button {
       display: block;
@@ -37,7 +37,7 @@
 <body>
   <h1>Skráning í StealthPay</h1>
   <form id="registerForm">
-    <input type="text" id="name" placeholder="Nafn þitt" required />
+    <input type="text" id="name" placeholder="Fullt nafn" required />
     <input type="email" id="email" placeholder="Netfang" required />
     <input type="password" id="password" placeholder="Lykilorð" required />
     <button type="submit">Skrá mig</button>
@@ -51,6 +51,8 @@
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
+      output.style.display = "none";
+      output.innerHTML = "";
 
       const name = document.getElementById("name").value;
       const email = document.getElementById("email").value;
@@ -65,22 +67,23 @@
 
         const data = await res.json();
 
+        output.style.display = "block";
+
         if (!res.ok) {
           output.innerHTML = `<p style="color: red;">Villa: ${data.error || "Óþekkt villa"}</p>`;
         } else {
           output.innerHTML = `
-            <h3>Skráning tókst 🎉</h3>
+            <h3>✅ Skráning tókst!</h3>
             <p><strong>Wallet Address:</strong><br>${data.walletAddress}</p>
             <p><strong>Private Key:</strong><br>${data.privateKey}</p>
-            <p><small>Vistaðu þetta örugglega!</small></p>
+            <p><small>Vistaðu þetta STRAX – þetta birtist aðeins einu sinni.</small></p>
           `;
         }
 
-        output.style.display = "block";
         form.reset();
       } catch (err) {
         output.style.display = "block";
-        output.innerHTML = `<p style="color: red;">Villa við tengingu við þjónustu.</p>`;
+        output.innerHTML = `<p style="color: red;">⛔ Villa við tengingu við bakenda.</p>`;
       }
     });
   </script>
