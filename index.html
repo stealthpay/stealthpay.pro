@@ -75,20 +75,20 @@
         });
 
         const data = await res.json();
-        output.style.display = "block";
 
         if (!res.ok) {
+          output.style.display = "block";
           output.innerHTML = `<p style="color: red;">Villa: ${data.error || "Óþekkt villa"}</p>`;
-        } else {
-          output.innerHTML = `
-            <h3>✅ Skráning tókst!</h3>
-            <p><strong>Wallet Address:</strong><br>${data.walletAddress}</p>
-            <p><strong>Private Key:</strong><br>${data.privateKey}</p>
-            <p><small>Vistaðu þetta STRAX – þetta birtist aðeins einu sinni.</small></p>
-          `;
+          return;
         }
 
-        form.reset();
+        // Vista í localStorage
+        localStorage.setItem("walletAddress", data.walletAddress);
+        localStorage.setItem("privateKey", data.privateKey);
+
+        // Fara á aðalsíðuna
+        window.location.href = "mitt-burne.html";
+
       } catch (err) {
         output.style.display = "block";
         output.innerHTML = `<p style="color: red;">⛔ Villa við tengingu við bakenda.</p>`;
