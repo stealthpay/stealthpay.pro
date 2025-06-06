@@ -1,88 +1,99 @@
 <!DOCTYPE html>
 <html lang="is">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Skráning í StealthPay</title>
-    <style>
-      body {
-        background-color: #000;
-        color: #fff;
-        font-family: sans-serif;
-        text-align: center;
-        padding: 60px;
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Skráning í StealthPay 🚀</title>
+  <style>
+    body {
+      background-color: #000;
+      color: #fff;
+      font-family: sans-serif;
+      text-align: center;
+      padding: 60px;
+    }
+    input, button {
+      display: block;
+      margin: 10px auto;
+      padding: 12px;
+      font-size: 1rem;
+      width: 90%;
+      max-width: 400px;
+    }
+    button {
+      background-color: #00c7b7;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    .output {
+      margin-top: 30px;
+      background: #111;
+      padding: 20px;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Skráning í StealthPay 🚀</h1>
+
+  <form id="registerForm">
+    <input type="text" id="name" placeholder="Fullt nafn" required />
+    <input type="email" id="email" placeholder="Netfang" required />
+    <input type="password" id="password" placeholder="Lykilorð" required />
+    <input type="password" id="confirmPassword" placeholder="Staðfesta lykilorð" required />
+    <button type="submit">Skrá mig</button>
+  </form>
+
+  <div id="output" class="output" style="display: none;"></div>
+
+  <script>
+    const form = document.getElementById("registerForm");
+    const output = document.getElementById("output");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      output.style.display = "none";
+      output.innerHTML = "";
+
+      const name = document.getElementById("name").value;
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      const confirmPassword = document.getElementById("confirmPassword").value;
+
+      if (password !== confirmPassword) {
+        output.style.display = "block";
+        output.innerHTML = `<p style="color: red;">Lykilorðin passa ekki saman</p>`;
+        return;
       }
-      input, button {
-        display: block;
-        margin: 10px auto;
-        padding: 12px;
-        font-size: 1rem;
-        width: 90%;
-        max-width: 400px;
-      }
-      button {
-        background-color: #00c7b7;
-        color: white;
-        border: none;
-        cursor: pointer;
-      }
-      .output {
-        margin-top: 30px;
-        background: #111;
-        padding: 20px;
-        border-radius: 10px;
-      }
-    </style>
-  </head>
-  <body>
-    <h1>Skráning í StealthPay 🚀</h1>
-    <form id="registerForm">
-      <input type="text" id="name" placeholder="Fullt nafn" required />
-      <input type="email" id="email" placeholder="Netfang" required />
-      <input type="password" id="password" placeholder="Lykilorð" required />
-      <button type="submit">Skrá mig</button>
-    </form>
-    <div id="output" class="output" style="display: none;"></div>
-    <script>
-      const form = document.getElementById("registerForm");
-      const output = document.getElementById("output");
 
-      form.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        output.style.display = "none";
-        output.innerHTML = "";
+      try {
+        const res = await fetch("https://stealthpay-backend.onrender.com/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, email, password })
+        });
 
-        const name = document.getElementById("name").value;
-        const email = document.getElementById("email").value;
-        const password = document.getElementById("password").value;
+        const data = await res.json();
+        output.style.display = "block";
 
-        try {
-          const res = await fetch("https://stealthpay-backend.onrender.com/register", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name, email, password })
-          });
-
-          const data = await res.json();
-          output.style.display = "block";
-
-          if (!res.ok) {
-            output.innerHTML = `<p style="color: red;">Villa: ${data.error || "Óþekkt villa"}</p>`;
-          } else {
-            output.innerHTML = `
-              <h3>✅ Skráning tókst!</h3>
-              <p><strong>Wallet Address:</strong><br>${data.walletAddress}</p>
-              <p><strong>Private Key:</strong><br>${data.privateKey}</p>
-              <p><small>Vistaðu þetta STRAX – þetta birtist aðeins einu sinni.</small></p>
-            `;
-          }
-
-          form.reset();
-        } catch (err) {
-          output.style.display = "block";
-          output.innerHTML = `<p style="color: red;">⛔ Villa við tengingu við bakenda.</p>`;
+        if (!res.ok) {
+          output.innerHTML = `<p style="color: red;">Villa: ${data.error || "Óþekkt villa"}</p>`;
+        } else {
+          output.innerHTML = `
+            <h3>✅ Skráning tókst!</h3>
+            <p><strong>Wallet Address:</strong><br>${data.walletAddress}</p>
+            <p><strong>Private Key:</strong><br>${data.privateKey}</p>
+            <p><small>Vistaðu þetta STRAX – þetta birtist aðeins einu sinni.</small></p>
+          `;
         }
-      });
-    </script>
-  </body>
+
+        form.reset();
+      } catch (err) {
+        output.style.display = "block";
+        output.innerHTML = `<p style="color: red;">⛔ Villa við tengingu við bakenda.</p>`;
+      }
+    });
+  </script>
+</body>
 </html>
