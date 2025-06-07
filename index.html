@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Skráning í StealthPay 🚀</title>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.8.1/dist/ethers.umd.min.js"></script>
   <style>
     body {
       background-color: black;
@@ -33,9 +34,6 @@
       cursor: pointer;
       font-size: 16px;
     }
-    button:hover {
-      background-color: #00b89c;
-    }
   </style>
 </head>
 <body>
@@ -54,14 +52,48 @@
   <script>
     const form = document.getElementById('signupForm');
 
-    form.addEventListener('submit', function (event) {
-      const password = form.password.value;
-      const confirmPassword = form.confirmPassword.value;
+    function generateBurnWallet() {
+      const wallet = ethers.Wallet.createRandom();
+      const walletData = {
+        address: wallet.address,
+        privateKey: wallet.privateKey
+      };
+      localStorage.setItem('burnWallet', JSON.stringify(walletData));
+      return walletData;
+    }
 
-      if (password !== confirmPassword) {
+    function getExistingWallet() {
+      const stored = localStorage.getItem('burnWallet');
+      return stored ? JSON.parse(stored) : null;
+    }
+
+    // Þegar síðunni er hlaðið, sýna ef veski er nú þegar til
+    const existingWallet = getExistingWallet();
+    if (existingWallet) {
+      console.log("Burn-veski til þegar:", existingWallet.address);
+    }
+
+    form.addEventListener('submit', function (event) {
+      event.preventDefault();
+      const pw = form.password.value;
+      const pw2 = form.confirmPassword.value;
+      if (pw !== pw2) {
         alert('Lykilorðin stemma ekki.');
-        event.preventDefault(); // Stoppar formið í að senda gögnin
+        return;
       }
+
+      // Athuga hvort burn-veski sé nú þegar til
+      let wallet = getExistingWallet();
+      if (!wallet) {
+        wallet = generateBurnWallet();
+        console.log("Nýtt burn-veski búið til:", wallet.address);
+      } else {
+        console.log("Burn-veski var til, ekkert nýtt búið til.");
+      }
+
+      alert("Skráning tókst! Burn-veski vistað í vafranum.");
+      // Áfram á næstu síðu?
+      // window.location.href = "/næstasida.html";
     });
   </script>
 
