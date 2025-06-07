@@ -6,54 +6,62 @@
   <title>Mitt Burne Veski</title>
   <style>
     body {
-      background-color: #000;
-      color: #fff;
+      background-color: #0d1117;
+      color: #f0f6fc;
       font-family: sans-serif;
       text-align: center;
-      padding: 60px;
+      padding: 40px;
     }
     .box {
-      background-color: #111;
-      padding: 20px;
+      background: #161b22;
+      padding: 30px;
       border-radius: 10px;
-      margin: 0 auto;
       max-width: 600px;
+      margin: 0 auto;
     }
     code {
       display: block;
-      background: #222;
-      color: #0f0;
+      background: #1c1c1c;
+      color: #00ff9c;
       padding: 10px;
       border-radius: 5px;
-      margin-top: 10px;
+      margin: 10px 0;
       word-break: break-all;
     }
     button {
       margin-top: 20px;
       padding: 10px 20px;
+      font-size: 1rem;
       background-color: #00c7b7;
       color: white;
       border: none;
-      font-size: 1rem;
       cursor: pointer;
+      border-radius: 5px;
+    }
+    .warning {
+      color: #ff4d4d;
+      font-size: 0.9rem;
+      margin-top: 10px;
     }
   </style>
 </head>
 <body>
   <h1>Mitt Burne Veski 🔐</h1>
 
-  <div class="box" id="walletBox" style="display: none;">
+  <div id="walletBox" class="box" style="display: none;">
     <p><strong>Wallet Address:</strong></p>
     <code id="walletAddress"></code>
 
     <p><strong>Private Key:</strong></p>
     <code id="privateKey"></code>
 
-    <button onclick="logout()">Útskráning</button>
+    <p class="warning">Vistaðu þetta STRAX. Þetta birtist aðeins einu sinni.</p>
+
+    <button onclick="logout()">Útskrá</button>
   </div>
 
   <div id="noWallet" style="display: none;">
-    <p>Engin innskráning fannst. Vinsamlegast <a href="index.html">skráðu þig fyrst</a>.</p>
+    <p>Engar upplýsingar fundust. <a href="index.html">Skráðu þig hér</a>.</p>
   </div>
 
   <script>
