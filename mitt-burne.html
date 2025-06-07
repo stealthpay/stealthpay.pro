@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <title>Mitt Burne-veski 🔥</title>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.8.1/dist/ethers.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
   <style>
     body {
       background-color: black;
@@ -34,6 +36,17 @@
       margin-bottom: 10px;
       word-break: break-all;
     }
+    #qrcode {
+      margin-top: 20px;
+      text-align: center;
+    }
+    a {
+      color: #00d1b2;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
     button {
       background-color: #ff4444;
       color: white;
@@ -53,26 +66,52 @@
   <div class="wallet-box">
     <h1>Burne-veski 🔥</h1>
     <div id="walletInfo"></div>
+    <div id="qrcode"></div>
     <button onclick="deleteWallet()">Eyða burne-veski</button>
   </div>
 
   <script>
-    function loadWallet() {
+    async function loadWallet() {
       const stored = localStorage.getItem('burnWallet');
       const container = document.getElementById('walletInfo');
+      const qr = document.getElementById('qrcode');
 
       if (!stored) {
-        container.innerHTML = "<p>Engin burn-veski fundust í vafranum.</p>";
+        container.innerHTML = "<p>Engin burne-veski fundust í vafranum.</p>";
         return;
       }
 
       const wallet = JSON.parse(stored);
+      const address = wallet.address;
 
+      // Sýna QR kóða
+      qr.innerHTML = "";
+      QRCode.toCanvas(address, { width: 200 }, function (error, canvas) {
+        if (error) console.error(error);
+        qr.appendChild(canvas);
+      });
+
+      // Tengjast við Ethereum public RPC node (t.d. via ethers.js)
+      const provider = new ethers.InfuraProvider("mainnet");
+
+      let balanceEth = "NaN";
+      try {
+        const balance = await provider.getBalance(address);
+        balanceEth = ethers.formatEther(balance);
+      } catch (err) {
+        console.error("Gat ekki sótt balance:", err);
+      }
+
+      // Setja upplýsingar á skjá
       container.innerHTML = `
         <strong>Veskisfang:</strong>
-        <code>${wallet.address}</code>
+        <code>${address}</code>
         <strong>Einkalykill:</strong>
         <code>${wallet.privateKey}</code>
+        <strong>Staða:</strong>
+        <code>${balanceEth} ETH</code>
+        <strong>Skoða á Etherscan:</strong>
+        <a href="https://etherscan.io/address/${address}" target="_blank">${address}</a>
       `;
     }
 
