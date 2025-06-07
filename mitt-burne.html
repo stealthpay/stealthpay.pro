@@ -1,85 +1,90 @@
 <!DOCTYPE html>
 <html lang="is">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mitt Burne Veski</title>
+  <meta charset="UTF-8">
+  <title>Mitt Burne-veski 🔥</title>
   <style>
     body {
-      background-color: #0d1117;
-      color: #f0f6fc;
+      background-color: black;
+      color: white;
       font-family: sans-serif;
-      text-align: center;
-      padding: 40px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
     }
-    .box {
-      background: #161b22;
-      padding: 30px;
+    .wallet-box {
+      background-color: #1e1e1e;
+      padding: 20px;
       border-radius: 10px;
-      max-width: 600px;
-      margin: 0 auto;
+      width: 90%;
+      max-width: 500px;
+      text-align: left;
+      box-shadow: 0 0 15px rgba(0,0,0,0.5);
+    }
+    h1 {
+      margin-bottom: 20px;
     }
     code {
       display: block;
-      background: #1c1c1c;
-      color: #00ff9c;
+      background: #333;
       padding: 10px;
       border-radius: 5px;
-      margin: 10px 0;
+      margin-bottom: 10px;
       word-break: break-all;
     }
     button {
-      margin-top: 20px;
-      padding: 10px 20px;
-      font-size: 1rem;
-      background-color: #00c7b7;
+      background-color: #ff4444;
       color: white;
       border: none;
-      cursor: pointer;
+      padding: 12px 24px;
       border-radius: 5px;
+      cursor: pointer;
+      margin-top: 20px;
     }
-    .warning {
-      color: #ff4d4d;
-      font-size: 0.9rem;
-      margin-top: 10px;
+    button:hover {
+      background-color: #dd0000;
     }
   </style>
 </head>
 <body>
-  <h1>Mitt Burne Veski 🔐</h1>
 
-  <div id="walletBox" class="box" style="display: none;">
-    <p><strong>Wallet Address:</strong></p>
-    <code id="walletAddress"></code>
-
-    <p><strong>Private Key:</strong></p>
-    <code id="privateKey"></code>
-
-    <p class="warning">Vistaðu þetta STRAX. Þetta birtist aðeins einu sinni.</p>
-
-    <button onclick="logout()">Útskrá</button>
-  </div>
-
-  <div id="noWallet" style="display: none;">
-    <p>Engar upplýsingar fundust. <a href="index.html">Skráðu þig hér</a>.</p>
+  <div class="wallet-box">
+    <h1>Burne-veski 🔥</h1>
+    <div id="walletInfo"></div>
+    <button onclick="deleteWallet()">Eyða burne-veski</button>
   </div>
 
   <script>
-    const wallet = localStorage.getItem("walletAddress");
-    const key = localStorage.getItem("privateKey");
+    function loadWallet() {
+      const stored = localStorage.getItem('burnWallet');
+      const container = document.getElementById('walletInfo');
 
-    if (wallet && key) {
-      document.getElementById("walletBox").style.display = "block";
-      document.getElementById("walletAddress").textContent = wallet;
-      document.getElementById("privateKey").textContent = key;
-    } else {
-      document.getElementById("noWallet").style.display = "block";
+      if (!stored) {
+        container.innerHTML = "<p>Engin burn-veski fundust í vafranum.</p>";
+        return;
+      }
+
+      const wallet = JSON.parse(stored);
+
+      container.innerHTML = `
+        <strong>Veskisfang:</strong>
+        <code>${wallet.address}</code>
+        <strong>Einkalykill:</strong>
+        <code>${wallet.privateKey}</code>
+      `;
     }
 
-    function logout() {
-      localStorage.clear();
-      window.location.href = "index.html";
+    function deleteWallet() {
+      if (confirm("Ertu viss um að þú viljir eyða burne-veskinu?")) {
+        localStorage.removeItem('burnWallet');
+        location.reload();
+      }
     }
+
+    loadWallet();
   </script>
+
 </body>
 </html>
