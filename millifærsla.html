@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Millifærsla | StealthPay</title>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+  <style>
+    body {
+      background-color: #0d1117;
+      color: #f0f6fc;
+      font-family: sans-serif;
+      text-align: center;
+      padding: 40px;
+    }
+    input, button {
+      padding: 12px;
+      font-size: 1rem;
+      margin: 10px auto;
+      width: 80%;
+      max-width: 400px;
+      display: block;
+    }
+    button {
+      background-color: #00c7b7;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    .output {
+      margin-top: 30px;
+    }
+    code {
+      background: #1e1e1e;
+      padding: 8px;
+      border-radius: 5px;
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+  <h1>Millifærsla 💸</h1>
+
+  <p><strong>Frá:</strong></p>
+  <code id="fromWallet"></code>
+
+  <input type="text" id="to" placeholder="Til (wallet address)" />
+  <input type="number" id="amount" placeholder="Upphæð í ETH" />
+  <button onclick="send()">Senda</button>
+
+  <div class="output" id="output"></div>
+
+  <script>
+    const privateKey = localStorage.getItem("privateKey");
+    const walletAddress = localStorage.getItem("walletAddress");
+
+    if (!privateKey || !walletAddress) {
+      alert("Engar upplýsingar til staðar. Skráðu þig fyrst.");
+      location.href = "index.html";
+    }
+
+    document.getElementById("fromWallet").textContent = walletAddress;
+
+    async function send() {
+      const to = document.getElementById("to").value.trim();
+      const amount = document.getElementById("amount").value;
+
+      if (!to || !amount) {
+        alert("Fylltu út bæði reiti.");
+        return;
+      }
+
+      try {
+        const provider = ethers.getDefaultProvider(); // getur verið testnet t.d. "goerli"
+        const wallet = new ethers.Wallet(privateKey, provider);
+
+        const tx = await wallet.sendTransaction({
+          to,
+          value: ethers.utils.parseEther(amount)
+        });
+
+        document.getElementById("output").innerHTML = `
+          ✅ Færsla send! <br/>
+          <small>TX: <a href="https://etherscan.io/tx/${tx.hash}" target="_blank">${tx.hash}</a></small>
+        `;
+      } catch (e) {
+        console.error(e);
+        document.getElementById("output").textContent = "❌ Villa við sendingu: " + e.message;
+      }
+    }
+  </script>
+</body>
+</html>
