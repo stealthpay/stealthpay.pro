@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+  <meta charset="UTF-8">
+  <title>Greiða | StealthPay</title>
+  <style>
+    body {
+      background: #0d1117;
+      color: white;
+      font-family: sans-serif;
+      text-align: center;
+      padding: 40px;
+    }
+    button {
+      padding: 15px 25px;
+      font-size: 1.1rem;
+      background: #00c7b7;
+      border: none;
+      border-radius: 5px;
+      color: white;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Greiðsla 35.000 kr</h1>
+  <p>Þú getur greitt með korti og DAI verður sent beint í móttakanda</p>
+  <p>Engin skráning – engin persónuupplýsing skráð</p>
+  <br />
+  <button onclick="payNow()">Greiða núna</button>
+
+  <script>
+    const sessionId = new URLSearchParams(window.location.search).get("session");
+
+    async function payNow() {
+      // Get destination wallet from backend session
+      const res = await fetch(`https://stealthpay-backend.onrender.com/session/${sessionId}`);
+      const data = await res.json();
+
+      const wallet = data.proxyWallet; // e.g. 0xABCDEF...
+      const amountUSD = data.amountUSD; // e.g. 35.000 kr = 250 USD
+      const daiAmount = data.daiAmount; // e.g. 250
+
+      const redirectURL = `https://global.transak.com?apiKey=yourTransakAPIKEY` +
+        `&cryptoCurrency=DAI&fiatCurrency=ISK&fiatAmount=${amountUSD}` +
+        `&walletAddress=${wallet}&disableWalletAddressForm=true`;
+
+      window.location.href = redirectURL;
+    }
+  </script>
+</body>
+</html>
