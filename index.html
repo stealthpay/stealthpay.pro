@@ -78,22 +78,45 @@
     <h3>✅ Greiðsla móttekin</h3>
     <p>Test DAI hefur verið sent í gegnum örugga miðlun (Sepolia).</p>
     <p>Greiðslan hefur verið send í proxy veski og áfram í Railgun.</p>
-    <p class="note">Session ID: #SPTEST45678</p>
+    <p class="note" id="sessionOutput">Session ID: –</p>
   </div>
 
   <script>
     const daiRate = 126;
     const spread = 1.05;
 
-    document.getElementById('amount').addEventListener('input', function() {
-      const isk = parseFloat(this.value);
+    function getQueryParam(param) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(param);
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const presetAmount = getQueryParam('amount');
+      const presetSession = getQueryParam('session');
+
+      if (presetAmount) {
+        document.getElementById('amount').value = presetAmount;
+        updateDAI(presetAmount);
+      }
+
+      if (presetSession) {
+        document.getElementById('sessionOutput').innerText = `Session ID: #${presetSession}`;
+      }
+    });
+
+    document.getElementById('amount').addEventListener('input', function () {
+      updateDAI(this.value);
+    });
+
+    function updateDAI(iskValue) {
+      const isk = parseFloat(iskValue);
       if (!isNaN(isk)) {
         const dai = (isk / daiRate) / spread;
         document.getElementById('converted').innerText = `DAI: ${dai.toFixed(2)}`;
       } else {
         document.getElementById('converted').innerText = `DAI: –`;
       }
-    });
+    }
 
     function processPayment() {
       const isk = parseFloat(document.getElementById('amount').value);
@@ -103,12 +126,6 @@
       }
 
       alert("[TEST MODE] Greiðsla samþykkt – sending á test DAI í gangi...");
-
-      // 🚧 TODO: Tenging við Sepolia testnet í backend
-      // - Notaðu ethers.getDefaultProvider("sepolia")
-      // - Búðu til burner veski B með ethers.Wallet.createRandom()
-      // - Sendu test DAI frá test veski ykkar ➝ proxy
-      // - Kalla á shield() í Railgun testnet
 
       document.querySelector('.container').classList.add('hidden');
       document.getElementById('receipt').classList.remove('hidden');
