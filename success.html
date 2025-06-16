@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Greiðsla staðfest – StealthPay</title>
+  <style>
+    body {
+      background: #eafaf1;
+      font-family: Arial, sans-serif;
+      padding: 40px;
+      text-align: center;
+    }
+    .box {
+      background: #fff;
+      padding: 30px;
+      max-width: 500px;
+      margin: 0 auto;
+      border-radius: 10px;
+      box-shadow: 0 0 12px rgba(0,0,0,0.1);
+      border-left: 8px solid #4CAF50;
+    }
+    h2 {
+      color: #4CAF50;
+    }
+    .note {
+      font-size: 0.9em;
+      color: #777;
+      margin-top: 25px;
+    }
+    .id {
+      font-family: monospace;
+      background: #f0f0f0;
+      padding: 6px 12px;
+      border-radius: 6px;
+      display: inline-block;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h2>✅ Greiðsla móttekin</h2>
+    <p>Greiðsla þín hefur verið staðfest með Stripe.</p>
+    <p>Við höfum hafið afhendingu á DAI í gegnum proxy & Railgun.</p>
+    <p class="note">Session ID:</p>
+    <div id="session" class="id">...</div>
+  </div>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const sessionId = urlParams.get("session_id");
+    document.getElementById("session").innerText = sessionId || "–";
+  </script>
+</body>
+</html>
