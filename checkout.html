@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Greiðsla í vinnslu</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      padding: 50px;
+      text-align: center;
+    }
+    .box {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      padding: 40px;
+      max-width: 500px;
+      margin: auto;
+    }
+    .success {
+      font-size: 22px;
+      color: green;
+    }
+    .session-id {
+      margin-top: 15px;
+      font-family: monospace;
+      background: #eee;
+      padding: 10px;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h1>Greiðsla í vinnslu</h1>
+    <p class="success">Greiðsluferli hófst – smelltu hér ef þú ert ekki vísað áfram sjálfkrafa.</p>
+    <p class="session-id" id="sessionId">Session ID: </p>
+    <script>
+      const params = new URLSearchParams(window.location.search);
+      const sessionId = params.get("session_id");
+      if (sessionId) {
+        document.getElementById("sessionId").textContent += sessionId;
+      } else {
+        document.getElementById("sessionId").textContent = "Engin session_id fannst";
+      }
+    </script>
+  </div>
+</body>
+</html>
