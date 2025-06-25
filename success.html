@@ -1,56 +1,51 @@
 <!DOCTYPE html>
 <html lang="is">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Greiðsla staðfest – StealthPay</title>
   <style>
     body {
-      background: #eafaf1;
       font-family: Arial, sans-serif;
-      padding: 40px;
+      background: #eaffea;
+      padding: 50px 20px;
       text-align: center;
     }
+
     .box {
-      background: #fff;
-      padding: 30px;
+      background: white;
+      padding: 40px;
       max-width: 500px;
-      margin: 0 auto;
-      border-radius: 10px;
-      box-shadow: 0 0 12px rgba(0,0,0,0.1);
-      border-left: 8px solid #4CAF50;
+      margin: auto;
+      border-radius: 12px;
+      box-shadow: 0 0 25px rgba(0, 0, 0, 0.05);
     }
-    h2 {
-      color: #4CAF50;
+
+    h1 {
+      color: #228833;
     }
-    .note {
-      font-size: 0.9em;
-      color: #777;
-      margin-top: 25px;
+
+    .info {
+      margin-top: 20px;
+      font-size: 16px;
+      color: #333;
     }
-    .id {
-      font-family: monospace;
-      background: #f0f0f0;
-      padding: 6px 12px;
-      border-radius: 6px;
+
+    a {
       display: inline-block;
-      margin-top: 8px;
+      margin-top: 30px;
+      text-decoration: none;
+      color: #0066cc;
     }
   </style>
 </head>
 <body>
   <div class="box">
-    <h2>✅ Greiðsla móttekin</h2>
-    <p>Greiðsla þín hefur verið staðfest með Stripe.</p>
-    <p>Við höfum hafið afhendingu á DAI í gegnum proxy & Railgun.</p>
-    <p class="note">Session ID:</p>
-    <div id="session" class="id">...</div>
-  </div>
+    <h1>✅ Greiðsla tókst!</h1>
+    <p class="info">DAI hefur verið móttekið og fer nú í öruggt proxy flæði.</p>
+    <p class="info">Viðtakandi fær greiðslu innan örfárra sekúndna.</p>
 
-  <script>
-    const urlParams = new URLSearchParams(window.location.search);
-    const sessionId = urlParams.get("session_id");
-    document.getElementById("session").innerText = sessionId || "–";
-  </script>
+    <a href="dashboard.html">Fara á mælaborð</a>
+  </div>
 </body>
 </html>
