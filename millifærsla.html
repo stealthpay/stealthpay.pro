@@ -1,94 +1,62 @@
 <!DOCTYPE html>
 <html lang="is">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Millifærsla | StealthPay Testnet</title>
-  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Millifærsla – StealthPay</title>
   <style>
     body {
-      background-color: #0d1117;
-      color: #f0f6fc;
-      font-family: sans-serif;
+      font-family: Arial, sans-serif;
+      background: #fdfdfd;
+      padding: 50px 20px;
       text-align: center;
-      padding: 40px;
     }
-    input, button {
+
+    .form-box {
+      background: white;
+      padding: 30px;
+      max-width: 500px;
+      margin: auto;
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.05);
+    }
+
+    input {
+      width: 100%;
       padding: 12px;
-      font-size: 1rem;
-      margin: 10px auto;
-      width: 80%;
-      max-width: 400px;
-      display: block;
+      margin-bottom: 20px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 16px;
     }
+
     button {
-      background-color: #00c7b7;
+      padding: 14px 22px;
+      background: #1a9f60;
       color: white;
+      font-size: 16px;
       border: none;
+      border-radius: 6px;
       cursor: pointer;
-      border-radius: 5px;
     }
-    .output {
-      margin-top: 30px;
-    }
-    code {
-      background: #1e1e1e;
-      padding: 8px;
-      border-radius: 5px;
-      display: inline-block;
+
+    a {
+      display: block;
+      margin-top: 20px;
+      color: #333;
+      text-decoration: none;
     }
   </style>
 </head>
 <body>
-  <h1>Millifærsla á Goerli 💸</h1>
-
-  <p><strong>Frá:</strong></p>
-  <code id="fromWallet"></code>
-
-  <input type="text" id="to" placeholder="Til (wallet address)" />
-  <input type="number" id="amount" placeholder="Upphæð í ETH" />
-  <button onclick="send()">Senda á testnet</button>
-
-  <div class="output" id="output"></div>
-
-  <script>
-    const privateKey = localStorage.getItem("privateKey");
-    const walletAddress = localStorage.getItem("walletAddress");
-
-    if (!privateKey || !walletAddress) {
-      alert("Engar upplýsingar til staðar. Skráðu þig fyrst.");
-      location.href = "index.html";
-    }
-
-    document.getElementById("fromWallet").textContent = walletAddress;
-
-    async function send() {
-      const to = document.getElementById("to").value.trim();
-      const amount = document.getElementById("amount").value;
-
-      if (!to || !amount) {
-        alert("Fylltu út bæði reiti.");
-        return;
-      }
-
-      try {
-        const provider = ethers.getDefaultProvider("goerli");
-        const wallet = new ethers.Wallet(privateKey, provider);
-
-        const tx = await wallet.sendTransaction({
-          to,
-          value: ethers.utils.parseEther(amount)
-        });
-
-        document.getElementById("output").innerHTML = `
-          ✅ Færsla send!<br>
-          <a href="https://goerli.etherscan.io/tx/${tx.hash}" target="_blank">Skoða TX á Goerli</a>
-        `;
-      } catch (e) {
-        console.error(e);
-        document.getElementById("output").textContent = "❌ Villa við sendingu: " + e.message;
-      }
-    }
-  </script>
+  <div class="form-box">
+    <h1>Millifærsla DAI</h1>
+    <form>
+      <input type="text" placeholder="Móttakandi (veskisfang)" required>
+      <input type="number" placeholder="Upphæð (DAI)" required>
+      <button type="submit">Staðfesta millifærslu</button>
+    </form>
+    <a href="dashboard.html">Til baka í mælaborð</a>
+  </div>
 </body>
 </html>
