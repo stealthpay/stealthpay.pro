@@ -1,79 +1,68 @@
 <!DOCTYPE html>
 <html lang="is">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Skráning í StealthPay</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nýskráning – StealthPay</title>
   <style>
     body {
-      background: #000;
-      color: #fff;
-      font-family: sans-serif;
+      font-family: Arial, sans-serif;
+      background: #eaf6ff;
       text-align: center;
-      padding-top: 100px;
+      padding: 60px 20px;
     }
-    input, button {
-      padding: 1rem;
-      font-size: 1rem;
-      margin: 1rem;
-      width: 250px;
+
+    .box {
+      background: white;
+      padding: 40px;
+      max-width: 400px;
+      margin: 0 auto;
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.05);
     }
-    button {
-      background: #00c7b7;
-      border: none;
-      color: #fff;
-      cursor: pointer;
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 20px;
       border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+
+    button {
+      padding: 14px 20px;
+      background: #0077cc;
+      color: white;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    a {
+      display: block;
+      margin-top: 20px;
+      color: #333;
+      text-decoration: none;
     }
   </style>
 </head>
 <body>
-  <h1>Skráning í StealthPay</h1>
-
-  <input id="name" placeholder="Nafn þitt" />
-  <input id="email" placeholder="Netfang" />
-  <input id="password" type="password" placeholder="Lykilorð" />
-  <input id="confirm" type="password" placeholder="Staðfesta lykilorð" />
-  <button onclick="skra()">Skrá mig</button>
-
-  <script>
-    async function skra() {
-      const name = document.getElementById("name").value.trim();
-      const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value;
-      const confirm = document.getElementById("confirm").value;
-
-      if (!name || !email || !password || !confirm) {
-        alert("⚠️ Vinsamlegast fylltu út öll svæði.");
-        return;
-      }
-
-      if (password !== confirm) {
-        alert("❌ Lykilorðin stemma ekki.");
-        return;
-      }
-
-      try {
-        const res = await fetch("https://stealthpay-backend.onrender.com/register", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ name, email, password })
-        });
-
-        const data = await res.json();
-
-        if (res.ok) {
-          alert(`✅ Velkomin(n) ${data.name}! Veski: ${data.walletId}`);
-        } else {
-          alert(`❌ Villa: ${data.error || 'Óþekkt villa'}`);
-        }
-      } catch (err) {
-        alert("❌ Gat ekki tengst netþjóni.");
-        console.error(err);
-      }
-    }
-  </script>
+  <div class="box">
+    <h1>Nýskráning</h1>
+    <form>
+      <input type="text" placeholder="Fullt nafn" required>
+      <input type="email" placeholder="Netfang" required>
+      <input type="password" placeholder="Lykilorð" required>
+      <button type="submit">Stofna aðgang</button>
+    </form>
+    <a href="login.html">Ertu þegar með aðgang? Innskráning</a>
+    <a href="index.html">Til baka</a>
+  </div>
 </body>
 </html>
