@@ -1,3 +1,10 @@
+<script>
+  const leyfilegt = prompt("Sláðu inn lykilorð:");
+  if (leyfilegt !== "stelpay2024") {
+    alert("Aðgangur hafnað.");
+    window.location.href = "https://google.com";
+  }
+</script>
 const express = require('express');
 const cors = require('cors');
 const fs = require('fs');
