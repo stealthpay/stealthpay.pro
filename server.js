@@ -1,64 +1,90 @@
-<script>
-  const leyfilegt = prompt("Sláðu inn lykilorð:");
-  if (leyfilegt !== "stelpay2024") {
-    alert("Aðgangur hafnað.");
-    window.location.href = "https://google.com";
-  }
-</script>
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const fs = require('fs');
+
 const app = express();
 
+// ===== ENV.JS endpoint til að senda public breytur til front-end =====
+app.get('/env.js', (req, res) => {
+  res.set('Content-Type', 'application/javascript');
+  res.send(`window.__ENV = ${JSON.stringify({
+    PROVIDER_A_NAME: process.env.NEXT_PUBLIC_PROVIDER_A_NAME,
+    PROVIDER_B_NAME: process.env.NEXT_PUBLIC_PROVIDER_B_NAME,
+    PROVIDER_C_NAME: process.env.NEXT_PUBLIC_PROVIDER_C_NAME,
+    PROVIDER_A_PCT: process.env.NEXT_PUBLIC_PROVIDER_A_PCT,
+    PROVIDER_A_FIXED: process.env.NEXT_PUBLIC_PROVIDER_A_FIXED,
+    PROVIDER_B_PCT: process.env.NEXT_PUBLIC_PROVIDER_B_PCT,
+    PROVIDER_B_FIXED: process.env.NEXT_PUBLIC_PROVIDER_B_FIXED,
+    PROVIDER_C_PCT: process.env.NEXT_PUBLIC_PROVIDER_C_PCT,
+    PROVIDER_C_FIXED: process.env.NEXT_PUBLIC_PROVIDER_C_FIXED,
+    DAI_ISK_RATE: process.env.NEXT_PUBLIC_DAI_ISK_RATE
+  })};`);
+});
+
+// ===== Wallet storage =====
 const FILE = './wallets.json';
 if (!fs.existsSync(FILE)) fs.writeFileSync(FILE, '{}');
+
 function loadWallets() {
   return JSON.parse(fs.readFileSync(FILE));
 }
+
 function saveWallets(data) {
   fs.writeFileSync(FILE, JSON.stringify(data, null, 2));
 }
 
+// ===== Middleware =====
 app.use(cors());
 app.use(express.json());
 
+// ===== Routes =====
+
+// Nýskráning – býr til bráðabirgðareikning með random ID
 app.post('/register', (req, res) => {
   const { name } = req.body;
-  const walletId = 'burneWallet_' + Math.random().toString(36).substr(2, 6).toUpperCase();
+  if (!name) return res.status(400).json({ error: 'Nafn vantar' });
+
   const wallets = loadWallets();
-  wallets[walletId] = { name, balance: 0 };
+  const walletId = 'burnerWallet_' + Math.random().toString(36).substr(2, 6).toUpperCase();
+
+  wallets[walletId] = {
+    name,
+    createdAt: new Date().toISOString(),
+    balanceISK: 0
+  };
+
   saveWallets(wallets);
-  res.json({ walletId, name, balance: 0 });
+
+  res.json({ walletId, message: 'Bráðabirgðareikningur hefur verið búinn til' });
 });
 
-app.post('/send', (req, res) => {
-  const { from, to, amount } = req.body;
+// Les inneign fyrir reikning
+app.get('/balance/:walletId', (req, res) => {
   const wallets = loadWallets();
-  if (!wallets[from]) return res.status(400).json({ error: "Sendandi fannst ekki" });
-  if (!wallets[to]) return res.status(400).json({ error: "Viðtakandi fannst ekki" });
-  if (wallets[from].balance < amount) return res.status(400).json({ error: "Ekki næg inneign" });
-  wallets[from].balance -= amount;
-  wallets[to].balance += amount;
+  const wallet = wallets[req.params.walletId];
+  if (!wallet) return res.status(404).json({ error: 'Reikningur fannst ekki' });
+
+  res.json({ balanceISK: wallet.balanceISK });
+});
+
+// Uppfæra inneign (demo top-up)
+app.post('/topup', (req, res) => {
+  const { walletId, amountISK } = req.body;
+  if (!walletId || !amountISK) return res.status(400).json({ error: 'Gögn vantar' });
+
+  const wallets = loadWallets();
+  const wallet = wallets[walletId];
+  if (!wallet) return res.status(404).json({ error: 'Reikningur fannst ekki' });
+
+  wallet.balanceISK += amountISK;
   saveWallets(wallets);
-  res.json({ success: true });
+
+  res.json({ message: 'Inneign uppfærð', newBalance: wallet.balanceISK });
 });
 
-app.get('/wallet/:id', (req, res) => {
-  const wallets = loadWallets();
-  const wallet = wallets[req.params.id];
-  if (!wallet) return res.status(404).json({ error: "Veski fannst ekki" });
-  res.json(wallet);
-});
-
-app.post('/deposit', (req, res) => {
-  const { walletId, amount } = req.body;
-  const wallets = loadWallets();
-  if (!wallets[walletId]) return res.status(404).json({ error: "Veski fannst ekki" });
-  wallets[walletId].balance += amount;
-  saveWallets(wallets);
-  res.json({ success: true });
-});
-
-app.listen(3000, () => {
-  console.log('✅ StealthPay backend running on http://localhost:3000');
+// ===== Start server =====
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
 });
