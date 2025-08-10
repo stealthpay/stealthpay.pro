@@ -1,8 +1,8 @@
-// topup.js (FULL REPLACE)
+// topup.js – hraðval + QR + íslenskt talnasnið
 (function () {
   const env = (window.__ENV || {});
-  const fmtISK = (n) => isNaN(n) ? '0 kr' : (Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' kr');
-  const toNum = (v) => Math.max(0, Number(v || 0));
+  const fmtISK = (n) =>
+    isNaN(n) ? '0 kr' : n.toLocaleString('is-IS', { maximumFractionDigits: 0 }) + ' kr';
   const providers = {
     A: { name: env.PROVIDER_A_NAME || 'Aðili A', pct: +env.PROVIDER_A_PCT || 0, fixed: +env.PROVIDER_A_FIXED || 0 },
     B: { name: env.PROVIDER_B_NAME || 'Aðili B', pct: +env.PROVIDER_B_PCT || 0, fixed: +env.PROVIDER_B_FIXED || 0 },
@@ -10,7 +10,7 @@
   };
   const rateDAI = Number(env.DAI_ISK_RATE || 140);
 
-  // els
+  // elements
   const $ = (id) => document.getElementById(id);
   const openBtn = $('openTopup');
   const modal = $('topupModal');
@@ -36,10 +36,19 @@
   pBName.textContent = providers.B.name;
   pCName.textContent = providers.C.name;
 
+  // normalíserar „1.000 / 100,000 / 100 000“ → 100000 og sýnir í is-IS
+  function normalizeAmountInput() {
+    const digits = (amountInput.value || '').replace(/[^\d]/g, '');
+    const n = digits ? parseInt(digits, 10) : 0;
+    amountInput.value = n ? n.toLocaleString('is-IS') : '';
+    return n;
+  }
+
   // hraðval
   document.querySelectorAll('.chip').forEach(ch => {
     ch.addEventListener('click', () => {
-      amountInput.value = ch.getAttribute('data-amt');
+      const val = Number(ch.getAttribute('data-amt') || '0');
+      amountInput.value = val.toLocaleString('is-IS');
       calc();
     });
   });
@@ -53,7 +62,7 @@
   }
 
   function calc() {
-    const amount = toNum(amountInput.value);
+    const amount = normalizeAmountInput();
     const feeA = amount * (providers.A.pct / 100) + providers.A.fixed;
     const feeB = amount * (providers.B.pct / 100) + providers.B.fixed;
     const feeC = amount * (providers.C.pct / 100) + providers.C.fixed;
@@ -75,7 +84,8 @@
     return { amount, totalPay, daiRecv };
   }
 
-  [amountInput, receiverInput].forEach(el => el && el.addEventListener('input', calc));
+  amountInput.addEventListener('input', () => { normalizeAmountInput(); calc(); });
+  receiverInput.addEventListener('input', calc);
 
   // QR skönnun
   let qrScanner = null;
@@ -89,12 +99,12 @@
             const q = new URLSearchParams(txt.split(':')[1]);
             const r = q.get('receiver'); const a = q.get('amount');
             if (r) receiverInput.value = r;
-            if (a) amountInput.value = a;
+            if (a) amountInput.value = Number(a||0).toLocaleString('is-IS');
           } else if (txt.includes('receiver=')) {
             const q = new URLSearchParams(txt.split('?')[1] || txt);
             const r = q.get('receiver'); const a = q.get('amount');
             if (r) receiverInput.value = r;
-            if (a) amountInput.value = a;
+            if (a) amountInput.value = Number(a||0).toLocaleString('is-IS');
           } else {
             receiverInput.value = txt.trim();
           }
