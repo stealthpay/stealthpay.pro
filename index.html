@@ -7,45 +7,75 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>StealthPay – Forsíða</title>
+  <title>StealthPay – einfaldur netbanki með Web3 reikning</title>
+  <link rel="icon" href="logo.png"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
-    body{background:#0b0e12;color:#e8eef7;font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;margin:0}
-    .wrap{max-width:960px;margin:40px auto;padding:0 16px;text-align:center}
-    .h{font-size:34px;font-weight:800;margin:8px 0}
-    .muted{opacity:.85}
-    .btn{padding:12px 16px;border-radius:12px;border:none;cursor:pointer}
-    .btn-primary{background:linear-gradient(90deg,#10b981,#2563eb);color:#fff}
-    .btn-ghost{background:#1b2130;color:#e8eef7}
-    .row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
-    .grid{display:grid;gap:16px;margin-top:24px}
-    @media(min-width:900px){.grid-3{grid-template-columns:1fr 1fr 1fr}}
-    .card{background:#10141a;border:1px solid #1e2530;border-radius:16px;padding:18px}
-    a{color:#8ab4ff;text-decoration:none}
+    :root{
+      --bg:#0b0e12; --text:#e8eef7; --muted:#9aa6b2; --line:#1e2530;
+      --card:#10141a; --grad1:#10b981; --grad2:#2563eb; --focus:#2563eb;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+    .page{max-width:1200px;margin:0 auto;padding:24px 16px 80px}
+    .hero{padding:40px 0 24px;text-align:center}
+    .title{font-size:clamp(34px,6vw,56px);font-weight:800;line-height:1.05;margin:0 0 14px}
+    .title .hl{background:linear-gradient(90deg,var(--grad2),var(--grad1));-webkit-background-clip:text;background-clip:text;color:transparent}
+    .lead{max-width:820px;margin:0 auto;color:var(--muted);font-size:18px}
+    .cta{display:flex;gap:12px;justify-content:center;margin:22px 0 0;flex-wrap:wrap}
+    .btn{padding:12px 18px;border-radius:12px;border:1px solid var(--line);background:#0f1216;color:var(--text);cursor:pointer;text-decoration:none;font-weight:600}
+    .btn.primary{border:none;background:linear-gradient(90deg,var(--grad1),var(--grad2))}
+    .btn:focus{outline:none;box-shadow:0 0 0 4px rgba(37,99,235,.25)}
+    .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-top:42px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;text-align:center}
+    .card h3{margin:8px 0 6px}
+    .muted{color:var(--muted)}
+    .pill{display:inline-grid;place-items:center;width:52px;height:52px;border-radius:14px;margin:0 auto 10px;background:linear-gradient(135deg,var(--grad2),var(--grad1))}
+    .callout{margin-top:40px;background:var(--card);border:1px dashed var(--line);border-radius:18px;padding:24px;display:grid;place-items:center}
+    .sub{font-size:14px;color:var(--muted);margin-top:6px}
+    @media (max-width:900px){ .grid{grid-template-columns:1fr} }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="h">StealthPay – einfaldur netbanki með Web3 reikning</div>
-    <div class="muted">Skráðu nafn og lykilorð, veldu almennan notanda eða tengdan reikning og byrjaðu strax.</div>
-    <div style="height:12px"></div>
-    <div class="row">
-      <a href="register.html"><button class="btn btn-primary">Stofna aðgang</button></a>
-      <a href="login.html"><button class="btn btn-ghost">Innskrá</button></a>
-    </div>
-
-    <div class="grid grid-3">
-      <div class="card"><strong>QR greiðslur</strong><div class="muted">Greiddu eða fáðu greitt með QR kóða.</div></div>
-      <div class="card"><strong>Bráðabirgða‑ eða tengdur reikningur</strong><div class="muted">Almennur notandi eða Pro – þú ræður.</div></div>
-      <div class="card"><strong>Persónuvernd fyrst</strong><div class="muted">Við geymum aðeins KYC stöðu, ekki skjöl.</div></div>
-    </div>
-
-    <div style="margin-top:28px">
-      <div class="card">
-        <strong>Tilbúinn að byrja?</strong>
-        <div style="height:10px"></div>
-        <a href="register.html"><button class="btn btn-primary">Stofna aðgang</button></a>
+  <main class="page">
+    <section class="hero">
+      <h1 class="title">StealthPay – einfaldur netbanki<br/>með <span class="hl">Web3 reikning</span></h1>
+      <p class="lead">Skráðu nafn og lykilorð, veldu almennan notanda eða tengdan reikning, og byrjaðu strax.</p>
+      <div class="cta">
+        <a class="btn primary" href="register.html">Stofna aðgang →</a>
+        <a class="btn" href="login.html">Innskrá</a>
       </div>
-    </div>
-  </div>
+    </section>
+
+    <section class="grid">
+      <article class="card">
+        <div class="pill">🔳</div>
+        <h3>QR greiðslur</h3>
+        <p class="muted">Greiddu eða fáðu greitt með QR kóða.</p>
+      </article>
+      <article class="card">
+        <div class="pill">👤</div>
+        <h3>Bráðabirgða‑ eða tengdur reikningur</h3>
+        <p class="muted">Almennur notandi eða Pro – þú ræður.</p>
+      </article>
+      <article class="card">
+        <div class="pill">🛡️</div>
+        <h3>Persónuvernd fyrst</h3>
+        <p class="muted">Við geymum aðeins KYC stöðu – ekki skjöl.</p>
+      </article>
+    </section>
+
+    <section class="callout">
+      <div style="text-align:center">
+        <div style="font-weight:800;font-size:20px">Tilbúinn að byrja?</div>
+        <div class="sub">Stofnaðu reikning á nokkrum sekúndum.</div>
+        <div class="cta" style="margin-top:14px">
+          <a class="btn primary" href="register.html">Stofna aðgang</a>
+        </div>
+      </div>
+    </section>
+  </main>
 </body>
 </html>
