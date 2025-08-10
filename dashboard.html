@@ -74,7 +74,7 @@
     <a class="link" href="index.html">← Til baka á forsíðu</a>
   </div>
 
-  <!-- Top‑up Modal (NEW) -->
+  <!-- Top‑up Modal -->
   <div id="topupModal" class="modal hidden">
     <div class="modal-card">
       <h3 style="margin:0 0 6px">Fylling</h3>
@@ -86,7 +86,7 @@
         <button class="chip" data-amt="100000">100.000</button>
         <button class="chip" data-amt="1000000000">1.000.000.000</button>
       </div>
-      <input id="topupAmount" type="number" min="0" step="100" placeholder="0" />
+      <input id="topupAmount" inputmode="numeric" pattern="[0-9\.\, ]*" placeholder="0" />
 
       <label style="margin-top:12px">Móttakandi reikningsnúmer</label>
       <div style="display:flex;gap:8px">
@@ -118,7 +118,7 @@
     </div>
   </div>
 
-  <!-- QR skanna bókasafn (CDN) -->
+  <!-- QR scanner -->
   <script src="https://unpkg.com/qr-scanner@1.4.2/qr-scanner.umd.min.js"></script>
 
   <script defer src="/topup.js"></script>
