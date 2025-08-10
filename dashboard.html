@@ -9,128 +9,118 @@
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>StealthPay – Stjórnborð</title>
   <link rel="icon" href="logo.png"/>
-  <script src="/env.js"></script>
+  <script src="/api/env.js"></script>
   <style>
-    body{background:#0b0e12;color:#e8eef7;font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;margin:0}
-    .wrap{max-width:1100px;margin:24px auto;padding:0 16px}
-    .h1{font-size:28px;font-weight:700;margin:8px 0}
-    .muted{opacity:.8}
-    .card{background:#10141a;border:1px solid #1e2530;border-radius:16px;padding:18px}
-    .grid{display:grid;gap:16px}
-    @media(min-width:960px){.grid-2{grid-template-columns:1fr 1fr}}
-    .btn{padding:10px 14px;border-radius:10px;border:none;cursor:pointer}
-    .btn-primary{background:linear-gradient(90deg,#10b981,#2563eb);color:#fff}
-    .btn-secondary{background:#222;color:#eee}
-    .section-title{font-size:18px;margin:0 0 8px 0;font-weight:600}
-    .tx{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #1b212b}
-    .tx:last-child{border-bottom:0}
-    .hidden{display:none}
-    .modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:50}
-    .modal-card{background:#121417;border-radius:16px;padding:20px;min-width:320px;max-width:420px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
-    label{display:block;margin:8px 0 4px}
-    input,select{width:100%;padding:10px;border-radius:8px;border:1px solid #2a2f38;background:#0f1216;color:#eaeaea}
-    hr{border:0;border-top:1px solid #2a2f38;margin:6px 0}
-    .breakdown{margin:12px 0 6px;display:grid;gap:6px}
-    .breakdown .muted{opacity:.8}
-    .breakdown .strong{font-weight:600}
-    .row{display:flex;gap:10px;justify-content:flex-end}
+    :root{
+      --bg:#0b0e12;--card:#10141a;--text:#e8eef7;--muted:#9aa6b2;--line:#1e2530;
+      --grad1:#10b981;--grad2:#2563eb;--focus:#2563eb;--danger:#f59e0b;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Inter,Roboto,Arial,sans-serif}
+    .page{max-width:1100px;margin:32px auto;padding:0 16px}
+    h1{margin:0 0 8px}
+    .muted{color:var(--muted)}
+    .cards{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+    .card{background:var(--card);border:1px solid:var(--line);border-radius:16px;padding:16px}
+    .balance{font-size:40px;font-weight:800;margin:12px 0 16px}
+    .btn{padding:10px 14px;border-radius:10px;border:1px solid var(--line);background:#0f1216;color:var(--text);cursor:pointer}
+    .btn.primary{border:none;background:linear-gradient(90deg,var(--grad1),var(--grad2));font-weight:700}
+    .list{margin-top:18px}
+    .row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-top:1px solid var(--line)}
+    .label{display:flex;align-items:center;gap:10px}
     a.link{color:#8ab4ff;text-decoration:none}
-    .chip{border:1px solid #2a2f38;background:#0f1216;color:#eaeaea;padding:6px 10px;border-radius:999px;cursor:pointer}
-    .chip:hover{background:#141a21}
+    /* ===== Topup modal ===== */
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none}
+    .overlay.open{display:block}
+    .modal{position:fixed;inset:0;display:none;place-items:center}
+    .modal.open{display:grid}
+    .modal-card{width:min(720px,96vw);background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px 16px;box-shadow:0 18px 45px rgba(0,0,0,.45)}
+    .modal h2{margin:6px 0 10px}
+    .grid{display:grid;grid-template-columns:1fr;gap:12px}
+    label{font-weight:600}
+    input, .field{width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--line);background:#0d1116;color:var(--text);outline:none}
+    input:focus{border-color:var(--focus);box-shadow:0 0 0 4px rgba(37,99,235,.15)}
+    .quick{display:flex;gap:10px;flex-wrap:wrap}
+    .pill{padding:8px 12px;border:1px solid var(--line);border-radius:24px;background:#0f1216;cursor:pointer}
+    .row-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:12px}
+    .btn.warn{border:1px solid var(--line);background:#171a1f}
+    .tag{font-size:12px;color:#cbd5e1}
+    .right{display:flex;gap:10px}
+    .qr-btn{min-width:120px}
+    .hr{height:1px;background:var(--line);margin:12px 0}
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="h1">Velkominn aftur, <span id="userName">Gunnar Kristjánsson</span></div>
-    <div class="muted">Hvað er staðan á reikningnum þínum í dag?</div>
-    <div class="muted" id="acctLine">Reikningur: 0x12…89AB</div>
-    <div style="height:16px"></div>
+  <div class="page">
+    <h1 id="welcome">Velkominn aftur</h1>
+    <div class="muted" id="acctLine">Hvað er staðan á reikningnum þínum í dag?</div>
 
-    <div class="grid grid-2">
+    <div class="cards">
       <div class="card">
-        <div class="section-title">Heildarstaða</div>
-        <div id="totalBal" style="font-size:32px;font-weight:700">1 487 950 kr</div>
-        <div style="height:12px"></div>
-        <button id="openTopup" class="btn btn-primary">Fylling á reikning</button>
+        <div class="muted">Heildarstaða</div>
+        <div class="balance" id="totalBalance">0 kr</div>
+        <button id="openTopup" class="btn primary">Fylling á reikning</button>
+        <div class="list">
+          <div class="row"><div class="label">Móttaka inn á reikning</div><div class="muted">+85.000 kr · Lokið</div></div>
+          <div class="row"><div class="label">Millifærsla milli reikninga</div><div class="muted">+150.000 kr · Lokið</div></div>
+          <div class="row"><div class="label">Úttekt</div><div class="muted">+45.000 kr · Lokið</div></div>
+        </div>
+        <div style="margin-top:16px"><a class="link" href="index.html">← Til baka á forsíðu</a></div>
       </div>
 
       <div class="card">
-        <div class="section-title">QR Reikningur</div>
-        <div class="muted">Deildu þessum QR til að fá inn á reikning</div>
-        <div style="height:10px"></div>
-        <div style="background:#0f1216;border:1px dashed #2a2f38;height:200px;border-radius:12px;display:flex;align-items:center;justify-content:center">[ QR – placeholder ]</div>
-      </div>
-    </div>
-
-    <div style="height:16px"></div>
-    <div class="card">
-      <div class="section-title">Færslur</div>
-      <div class="tx"><span>Móttaka inn á reikning</span><span>+85.000 kr · Lokið</span></div>
-      <div class="tx"><span>Millifærsla milli reikninga</span><span>+150.000 kr · Lokið</span></div>
-      <div class="tx"><span>Úttekt</span><span>+45.000 kr · Lokið</span></div>
-    </div>
-
-    <div style="height:20px"></div>
-    <a class="link" href="index.html">← Til baka á forsíðu</a>
-  </div>
-
-  <!-- Top‑up Modal -->
-  <div id="topupModal" class="modal hidden">
-    <div class="modal-card">
-      <h3 style="margin:0 0 6px">Fylling</h3>
-
-      <label>Upphæð (ISK kr)</label>
-      <div id="quickRow" style="display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 8px">
-        <button class="chip" data-amt="1000">1.000</button>
-        <button class="chip" data-amt="10000">10.000</button>
-        <button class="chip" data-amt="100000">100.000</button>
-        <button class="chip" data-amt="1000000000">1.000.000.000</button>
-      </div>
-      <input id="topupAmount" inputmode="numeric" pattern="[0-9\.\, ]*" placeholder="0" />
-
-      <label style="margin-top:12px">Móttakandi reikningsnúmer</label>
-      <div style="display:flex;gap:8px">
-        <input id="receiver" placeholder="Slá inn reikningsnúmer"/>
-        <button id="scanBtn" class="btn btn-secondary">Skanna QR</button>
-      </div>
-      <div id="scanWrap" class="hidden" style="margin-top:10px">
-        <video id="qrVideo" muted playsinline style="width:100%;border-radius:8px;border:1px solid #2a2f38"></video>
-        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
-          <button id="stopScan" class="btn btn-secondary">Hætta skönnun</button>
+        <div class="muted">QR Reikningur</div>
+        <div style="height:220px;border:1px dashed var(--line);border-radius:14px;display:grid;place-items:center;margin-top:10px" class="muted">
+          [ QR – placeholder ]
         </div>
       </div>
+    </div>
+  </div>
 
-      <div class="breakdown">
-        <div><span>Fylling</span><span id="bAmount">0 kr</span></div>
-        <div class="muted"><span id="pAName"></span><span id="pAFee">0 kr</span></div>
-        <div class="muted"><span id="pBName"></span><span id="pBFee">0 kr</span></div>
-        <div class="muted"><span id="pCName"></span><span id="pCFee">0 kr</span></div>
-        <hr/>
-        <div class="strong"><span>Samtals greitt</span><span id="bTotal">0 kr</span></div>
-        <div><span>Fæst á reikning</span><span id="bToAccount">0 kr</span></div>
-        <div class="muted"><span>Áætlað DAI</span><span id="bDai">0.00</span></div>
+  <!-- ===== Topup modal ===== -->
+  <div id="overlay" class="overlay"></div>
+  <div id="topupModal" class="modal" aria-hidden="true">
+    <div class="modal-card">
+      <h2>Fylling</h2>
+      <div class="muted">Upphæð (ISK kr)</div>
+      <div class="quick" id="quickBtns">
+        <button class="pill" data-amt="1000">1.000</button>
+        <button class="pill" data-amt="10000">10.000</button>
+        <button class="pill" data-amt="100000">100.000</button>
+        <button class="pill" data-amt="1000000000">1.000.000.000</button>
       </div>
 
-      <div class="row">
-        <button id="cancelTopup" class="btn btn-secondary">Hætta við</button>
-        <button id="confirmTopup" class="btn btn-primary" disabled>Greiða með korti</button>
+      <div class="grid">
+        <input id="amountInput" inputmode="numeric" placeholder="0"/>
+      </div>
+
+      <div style="height:6px"></div>
+      <label>Móttakandi reikningsnúmer</label>
+      <div class="right">
+        <input id="receiverInput" placeholder="Slá inn reikningsnúmer" class="field" style="flex:1"/>
+        <button class="btn qr-btn" id="scanQr">Skanna<br/>QR</button>
+      </div>
+
+      <div style="height:10px"></div>
+      <div id="calcBox" class="muted">
+        <div id="fillLine">Fylling0 kr</div>
+        <div id="pA">Aðili A0 kr</div>
+        <div id="pB">Aðili B0 kr</div>
+        <div id="pC">Aðili C0 kr</div>
+      </div>
+
+      <div class="hr"></div>
+      <div style="font-weight:700" id="sumPaid">Samtals greitt0 kr</div>
+      <div id="sumToAcct" class="muted">Fæst á reikning0 kr</div>
+      <div id="estDai" class="muted">Áætlað DAI0.00 DAI</div>
+
+      <div class="row-actions">
+        <button id="cancelTopup" class="btn warn">Hætta við</button>
+        <button id="payCard" class="btn primary">Greiða með korti</button>
       </div>
     </div>
   </div>
 
-  <!-- QR scanner -->
-  <script src="https://unpkg.com/qr-scanner@1.4.2/qr-scanner.umd.min.js"></script>
-
-  <script defer src="/topup.js"></script>
-  <script>
-    (function () {
-      try {
-        const u = JSON.parse(localStorage.getItem('stealthpay_user') || '{}');
-        if (u.name) document.getElementById('userName').textContent = u.name;
-        if (u.wallet_id) document.getElementById('acctLine').textContent =
-          'Reikningur: ' + (u.wallet_id.slice(0,8) + '…' + u.wallet_id.slice(-4));
-      } catch {}
-    })();
-  </script>
+  <script src="/topup.js"></script>
 </body>
 </html>
