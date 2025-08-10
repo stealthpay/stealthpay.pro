@@ -1,164 +1,147 @@
-// topup.js – hraðval + QR + íslenskt talnasnið + rétt gjaldauppfærsla
+// topup.js – full virkni fyrir Top‑up gluggann (opna/loka/útreikning/jöfnun)
 (function () {
-  const env = (window.__ENV || {});
-  const fmtISK = (n) =>
-    isNaN(n) ? '0 kr' : n.toLocaleString('is-IS', { maximumFractionDigits: 0 }) + ' kr';
-  const providers = {
-    A: { name: env.PROVIDER_A_NAME || 'Aðili A', pct: +env.PROVIDER_A_PCT || 0, fixed: +env.PROVIDER_A_FIXED || 0 },
-    B: { name: env.PROVIDER_B_NAME || 'Aðili B', pct: +env.PROVIDER_B_PCT || 0, fixed: +env.PROVIDER_B_FIXED || 0 },
-    C: { name: env.PROVIDER_C_NAME || 'Aðili C', pct: +env.PROVIDER_C_PCT || 0, fixed: +env.PROVIDER_C_FIXED || 0 },
-  };
-  const rateDAI = Number(env.DAI_ISK_RATE || 140);
-
-  // elements
   const $ = (id) => document.getElementById(id);
+
+  // Elements
   const openBtn = $('openTopup');
   const modal = $('topupModal');
-  const amountInput = $('topupAmount');
-  const receiverInput = $('receiver');
+  const overlay = $('overlay');
   const cancelBtn = $('cancelTopup');
-  const confirmBtn = $('confirmTopup');
-  const scanBtn = $('scanBtn');
-  const stopScan = $('stopScan');
-  const scanWrap = $('scanWrap');
-  const video = $('qrVideo');
+  const quickBox = $('quickBtns');
+  const amountInput = $('amountInput');
+  const receiverInput = $('receiverInput');
+  const scanQrBtn = $('scanQr');
+  const payBtn = $('payCard');
 
-  const bAmount = $('bAmount');
-  const pAName = $('pAName'), pAFee = $('pAFee');
-  const pBName = $('pBName'), pBFee = $('pBFee');
-  const pCName = $('pCName'), pCFee = $('pCFee');
-  const bTotal = $('bTotal');
-  const bToAccount = $('bToAccount');
-  const bDai = $('bDai');
+  const fillLine = $('fillLine');
+  const pA = $('pA');
+  const pB = $('pB');
+  const pC = $('pC');
+  const sumPaid = $('sumPaid');
+  const sumToAcct = $('sumToAcct');
+  const estDai = $('estDai');
 
-  // sýna heiti aðila
-  pAName.textContent = providers.A.name;
-  pBName.textContent = providers.B.name;
-  pCName.textContent = providers.C.name;
+  const ENV = window.__ENV || {};
+  const fmt = (n) => new Intl.NumberFormat('is-IS').format(Math.max(0, Math.round(n || 0)));
 
-  // normalíserar „1.000 / 100,000 / 100 000“ → 100000 og sýnir í is-IS
-  function normalizeAmountInput() {
-    const digits = (amountInput.value || '').replace(/[^\d]/g, '');
-    const n = digits ? parseInt(digits, 10) : 0;
-    amountInput.value = n ? n.toLocaleString('is-IS') : '';
-    return n;
+  // === Modal open/close helpers ===
+  function openModal() {
+    overlay.classList.add('open');
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden', 'false');
+    amountInput.focus();
+    calc(); // uppfæra við opnun
   }
 
-  // hraðval
-  document.querySelectorAll('.chip').forEach(ch => {
-    ch.addEventListener('click', () => {
-      const val = Number(ch.getAttribute('data-amt') || '0');
-      amountInput.value = val.toLocaleString('is-IS');
-      calc();
-    });
+  function clearFields() {
+    amountInput.value = '';
+    receiverInput.value = '';
+    fillLine.textContent = 'Fylling0 kr';
+    pA.textContent = 'Aðili A0 kr';
+    pB.textContent = 'Aðili B0 kr';
+    pC.textContent = 'Aðili C0 kr';
+    sumPaid.textContent = 'Samtals greitt0 kr';
+    sumToAcct.textContent = 'Fæst á reikning0 kr';
+    estDai.textContent = 'Áætlað DAI0.00 DAI';
+  }
+
+  function closeModal() {
+    overlay.classList.remove('open');
+    modal.classList.remove('open');
+    modal.setAttribute('aria-hidden', 'true');
+    clearFields();
+  }
+
+  // === Events for open/close ===
+  openBtn?.addEventListener('click', openModal);
+  cancelBtn?.addEventListener('click', closeModal);
+  overlay?.addEventListener('click', (e) => {
+    if (e.target === overlay) closeModal();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeModal();
   });
 
-  function kycBlocked() {
-    try {
-      const u = JSON.parse(localStorage.getItem('stealthpay_user') || '{}');
-      const tier = (u.tier || '').toLowerCase();
-      return (tier.includes('almenn') || tier.includes('amat')) && u.kyc_status !== 'staðfest';
-    } catch { return false; }
-  }
+  // === Quick amount buttons ===
+  quickBox?.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-amt]');
+    if (!btn) return;
+    const raw = Number(btn.getAttribute('data-amt'));
+    amountInput.value = fmt(raw);
+    calc();
+  });
 
-  // ✅ FIX: reiknar & birtir gjöldin rétt
+  // === Format input (thousands dots) & recalc ===
+  function unfmt(val) {
+    return Number(String(val).replace(/[^\d]/g, '')) || 0;
+  }
+  amountInput?.addEventListener('input', () => {
+    const raw = unfmt(amountInput.value);
+    amountInput.value = raw ? fmt(raw) : '';
+    calc();
+  });
+
+  // === Main calculation from ENV fees ===
   function calc() {
-    const amount = normalizeAmountInput();          // rétt tala úr input
-    const feeA = amount * (providers.A.pct / 100) + providers.A.fixed;
-    const feeB = amount * (providers.B.pct / 100) + providers.B.fixed;
-    const feeC = amount * (providers.C.pct / 100) + providers.C.fixed;
-    const totalFees = feeA + feeB + feeC;
-    const totalPay  = amount + totalFees;
-    const daiRecv   = amount > 0 ? (amount / rateDAI).toFixed(2) : '0.00';
+    const raw = unfmt(amountInput.value);
+    const aPct = Number(ENV.PROVIDER_A_PCT || 0) / 100;
+    const bPct = Number(ENV.PROVIDER_B_PCT || 0) / 100;
+    const cPct = Number(ENV.PROVIDER_C_PCT || 0) / 100;
 
-    // uppfæra UI
-    bAmount.textContent  = fmtISK(amount);
-    pAFee.textContent    = fmtISK(feeA);
-    pBFee.textContent    = fmtISK(feeB);
-    pCFee.textContent    = fmtISK(feeC);
-    bTotal.textContent   = fmtISK(totalPay);
-    bToAccount.textContent = fmtISK(amount);
-    bDai.textContent     = daiRecv + ' DAI';
+    const aFix = Number(ENV.PROVIDER_A_FIXED || 0);
+    const bFix = Number(ENV.PROVIDER_B_FIXED || 0);
+    const cFix = Number(ENV.PROVIDER_C_FIXED || 0);
 
-    const ok = amount > 0 && receiverInput.value.trim().length > 0 && !kycBlocked();
-    confirmBtn.disabled = !ok;
-    confirmBtn.title = (!ok && kycBlocked()) ? 'KYC þarf til að fylla á reikning' : '';
-    return { amount, totalPay, daiRecv };
+    const feeA = Math.round(raw * aPct + aFix);
+    const feeB = Math.round(raw * bPct + bFix);
+    const feeC = Math.round(raw * cPct + cFix);
+    const total = raw + feeA + feeB + feeC;
+
+    const daiRate = Number(ENV.DAI_ISK_RATE || 140);
+    const est = raw > 0 ? (raw / daiRate) : 0;
+
+    fillLine.textContent = `Fylling${fmt(raw)} kr`;
+    pA.textContent = `${ENV.PROVIDER_A_NAME || 'Aðili A'}${fmt(feeA)} kr`;
+    pB.textContent = `${ENV.PROVIDER_B_NAME || 'Aðili B'}${fmt(feeB)} kr`;
+    pC.textContent = `${ENV.PROVIDER_C_NAME || 'Aðili C'}${fmt(feeC)} kr`;
+    sumPaid.textContent = `Samtals greitt${fmt(total)} kr`;
+    sumToAcct.textContent = `Fæst á reikning${fmt(raw)} kr`;
+    estDai.textContent = `Áætlað DAI${est.toFixed(2)} DAI`;
   }
 
-  amountInput.addEventListener('input', () => { normalizeAmountInput(); calc(); });
-  receiverInput.addEventListener('input', calc);
+  // run once on load to show 0 lines
+  calc();
 
-  // QR skönnun
-  let qrScanner = null;
-  async function startScan() {
-    scanWrap.classList.remove('hidden');
-    try {
-      qrScanner = new QrScanner(video, result => {
-        const txt = String(result || '');
-        try {
-          if (txt.startsWith('stealthpay:')) {
-            const q = new URLSearchParams(txt.split(':')[1]);
-            const r = q.get('receiver'); const a = q.get('amount');
-            if (r) receiverInput.value = r;
-            if (a) amountInput.value = Number(a||0).toLocaleString('is-IS');
-          } else if (txt.includes('receiver=')) {
-            const q = new URLSearchParams(txt.split('?')[1] || txt);
-            const r = q.get('receiver'); const a = q.get('amount');
-            if (r) receiverInput.value = r;
-            if (a) amountInput.value = Number(a||0).toLocaleString('is-IS');
-          } else {
-            receiverInput.value = txt.trim();
-          }
-        } catch { receiverInput.value = txt.trim(); }
-        calc();
-        stopScanning();
-      }, { highlightScanRegion: true, maxScansPerSecond: 8 });
-      await qrScanner.start();
-    } catch (e) {
-      alert('Gat ekki opnað myndavél. Leyfðu myndavél í vafranum.');
-      scanWrap.classList.add('hidden');
-    }
-  }
-  function stopScanning() {
-    if (qrScanner) { qrScanner.stop(); qrScanner.destroy(); qrScanner = null; }
-    scanWrap.classList.add('hidden');
-  }
-  scanBtn?.addEventListener('click', startScan);
-  stopScan?.addEventListener('click', stopScanning);
-
-  // opna/loka
-  openBtn?.addEventListener('click', () => { modal.classList.remove('hidden'); calc(); });
-  cancelBtn?.addEventListener('click', () => { stopScanning(); modal.classList.add('hidden'); });
-
-  // staðfesta (demo)
-  confirmBtn?.addEventListener('click', async () => {
-    const { amount, totalPay, daiRecv } = calc();
-    alert(`Fylling á reikning\nMóttakandi: ${receiverInput.value}\nFylling: ${fmtISK(amount)}\nSamtals greitt: ${fmtISK(totalPay)}\nÁætlað DAI: ${daiRecv} DAI`);
-    try {
-      const u = JSON.parse(localStorage.getItem('stealthpay_user') || '{}');
-      if (u.wallet_id) {
-        await fetch('/topup', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ walletId: u.wallet_id, amountISK: amount })
-        });
-      }
-    } catch {}
-    stopScanning();
-    modal.classList.add('hidden');
+  // === QR button (placeholder) ===
+  scanQrBtn?.addEventListener('click', () => {
+    alert('QR skanni kemur næst (camera permission + decode).');
   });
 
-  // tryggja demo reikning
-  (function ensureWallet(){
-    const u = JSON.parse(localStorage.getItem('stealthpay_user') || '{}');
-    if (!u.wallet_id) {
-      u.wallet_id = 'burner_' + Math.random().toString(36).slice(2,8).toUpperCase();
-      if (!u.tier) u.tier = 'Almennur notandi';
-      if (!u.kyc_status) u.kyc_status = 'óstaðfest';
-      localStorage.setItem('stealthpay_user', JSON.stringify(u));
-    }
-  })();
+  // === Pay with card (demo call to backend) ===
+  payBtn?.addEventListener('click', async () => {
+    const amt = unfmt(amountInput.value);
+    const recv = (receiverInput.value || '').trim();
+    if (!amt || !recv) { alert('Vantar upphæð og móttakanda'); return; }
 
-  calc();
+    try {
+      const u = JSON.parse(localStorage.getItem('stealthpay_user') || '{}');
+      const r = await fetch('/api/topup', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ amountISK: amt, receiver: recv, walletId: u.wallet_id || 'burner_local' })
+      });
+      const j = await r.json();
+      if (!j.ok) throw new Error(j.error || 'Villa í top-up');
+      alert('Færsla stofnuð (demo): ' + (j.route || ''));
+      closeModal();
+    } catch (err) {
+      alert('Tókst ekki: ' + (err?.message || err));
+    }
+  });
+
+  // === Header welcome data (demo) ===
+  const user = JSON.parse(localStorage.getItem('stealthpay_user') || '{}');
+  if (user?.name) $('welcome').textContent = `Velkominn aftur, ${user.name}`;
+  $('acctLine').textContent = `Hvað er staðan á reikningnum þínum í dag?\nReikningur: 0x12…89AB`;
+  $('totalBalance').textContent = fmt(1487950) + ' kr';
 })();
