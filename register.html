@@ -1,75 +1,51 @@
 <script>
-  const leyfilegt = prompt("Sláðu inn lykilorð:");
-  if (leyfilegt !== "stelpay2024") {
-    alert("Aðgangur hafnað.");
-    window.location.href = "https://google.com";
-  }
+  const p = prompt("Sláðu inn lykilorð:");
+  if (p !== "!") { alert("Aðgangur hafnað."); location.href = "https://google.com"; }
 </script>
-<!DOCTYPE html>
+<!doctype html>
 <html lang="is">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nýskráning – StealthPay</title>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>StealthPay – Stofna aðgang</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #eaf6ff;
-      text-align: center;
-      padding: 60px 20px;
-    }
-
-    .box {
-      background: white;
-      padding: 40px;
-      max-width: 400px;
-      margin: 0 auto;
-      border-radius: 10px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.05);
-    }
-
-    h1 {
-      margin-bottom: 20px;
-    }
-
-    input {
-      width: 100%;
-      padding: 12px;
-      margin-bottom: 20px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      font-size: 16px;
-    }
-
-    button {
-      padding: 14px 20px;
-      background: #0077cc;
-      color: white;
-      font-size: 16px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-
-    a {
-      display: block;
-      margin-top: 20px;
-      color: #333;
-      text-decoration: none;
-    }
+    body{background:#0b0e12;color:#e8eef7;font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;margin:0}
+    .wrap{max-width:440px;margin:40px auto;padding:0 16px}
+    .card{background:#10141a;border:1px solid #1e2530;border-radius:16px;padding:18px}
+    label{display:block;margin:8px 0 4px}
+    input{width:100%;padding:10px;border-radius:10px;border:1px solid #2a2f38;background:#0f1216;color:#eaeaea}
+    .btn{padding:10px 14px;border-radius:10px;border:none;cursor:pointer;background:linear-gradient(90deg,#10b981,#2563eb);color:#fff}
+    a{color:#8ab4ff;text-decoration:none}
   </style>
 </head>
 <body>
-  <div class="box">
-    <h1>Nýskráning</h1>
-    <form>
-      <input type="text" placeholder="Fullt nafn" required>
-      <input type="email" placeholder="Netfang" required>
-      <input type="password" placeholder="Lykilorð" required>
-      <button type="submit">Stofna aðgang</button>
-    </form>
-    <a href="login.html">Ertu þegar með aðgang? Innskráning</a>
-    <a href="index.html">Til baka</a>
+  <div class="wrap">
+    <div class="card">
+      <h2>Stofna aðgang</h2>
+      <label>Nafn</label>
+      <input id="name" placeholder="Nafn (má vera hvað sem er)"/>
+      <label>Lykilorð</label>
+      <input id="pw" type="password" placeholder="Lykilorð"/>
+
+      <div style="height:10px"></div>
+      <button class="btn" onclick="doRegister()">Halda áfram</button>
+      <div style="height:10px"></div>
+      <a href="index.html">← Forsíða</a>
+    </div>
   </div>
+
+  <script>
+    function doRegister(){
+      const name = document.getElementById('name').value.trim();
+      const pw = document.getElementById('pw').value;
+      if(!name || !pw){ alert('Vantar nafn og lykilorð'); return; }
+      const users = JSON.parse(localStorage.getItem('stealthpay_users')||'[]');
+      users.push({name, passwordHash: btoa(pw), createdAt: new Date().toISOString()});
+      localStorage.setItem('stealthpay_users', JSON.stringify(users));
+      const u = { name, tier:'Almennur notandi', kyc_status:'óstaðfest' };
+      localStorage.setItem('stealthpay_user', JSON.stringify(u));
+      location.href = 'dashboard.html';
+    }
+  </script>
 </body>
 </html>
