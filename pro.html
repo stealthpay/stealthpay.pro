@@ -1,58 +1,56 @@
 <script>
-  const leyfilegt = prompt("Sláðu inn lykilorð:");
-  if (leyfilegt !== "stelpay2024") {
-    alert("Aðgangur hafnað.");
-    window.location.href = "https://google.com";
-  }
+  const p = prompt("Sláðu inn lykilorð:");
+  if (p !== "!") { alert("Aðgangur hafnað."); location.href = "https://google.com"; }
 </script>
-<!DOCTYPE html>
+<!doctype html>
 <html lang="is">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Skráning í StealthPay (PRO)</title>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>StealthPay – PRO</title>
+  <link rel="icon" href="logo.png"/>
+  <script src="/api/env.js"></script>
   <style>
-    body { background: #000; color: #fff; font-family: sans-serif; text-align: center; padding-top: 100px; }
-    input, button { padding: 1rem; font-size: 1rem; margin: 1rem; width: 250px; }
-    button { background: #00c7b7; border: none; color: #fff; cursor: pointer; border-radius: 6px; }
+    body{background:#0b0e12;color:#e8eef7;font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;margin:0}
+    .wrap{max-width:720px;margin:48px auto;padding:0 16px}
+    .card{background:#10141a;border:1px solid #1e2530;border-radius:16px;padding:20px}
+    .h1{font-size:28px;font-weight:700;margin:0 0 8px}
+    .muted{opacity:.8}
+    .row{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}
+    .btn{padding:12px 14px;border-radius:10px;border:1px solid #2a2f38;background:#0f1216;color:#eaeaea;cursor:pointer}
+    .btn-primary{background:linear-gradient(90deg,#10b981,#2563eb);color:#fff;border:none}
+    .addr{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:#0f1216;border:1px solid #2a2f38;border-radius:8px;padding:10px}
+    a{color:#8ab4ff;text-decoration:none}
   </style>
+  <!-- Web3Modal v1 + WalletConnect + ethers (UMD byggingar) -->
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/web3modal@1.9.12/dist/index.js"></script>
 </head>
 <body>
-  <h1>Skráning í StealthPay</h1>
-  <input id="name" placeholder="Nafn þitt" />
-  <input id="email" placeholder="Netfang" />
-  <input id="password" type="password" placeholder="Lykilorð" />
-  <button onclick="skra()">Skrá mig</button>
+  <div class="wrap">
+    <div class="h1">PRO aðgangur</div>
+    <p class="muted">Tengdu veskið þitt (MetaMask, Ledger í gegnum WalletConnect, o.fl.).</p>
 
-  <script>
-    const API = "https://rumbling-maze-soccer.glitch.me";
+    <div class="card">
+      <div class="row">
+        <button id="connectBtn" class="btn btn-primary">Tengja veski</button>
+        <button id="disconnectBtn" class="btn">Aftengja</button>
+        <a href="dashboard.html" class="btn">← Til baka</a>
+      </div>
 
-    async function skra() {
-      const name = document.getElementById("name").value.trim();
-      const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value;
+      <div style="height:16px"></div>
+      <div id="status" class="muted">Ekkert veski tengt.</div>
+      <div style="height:8px"></div>
+      <div id="addrBox" class="addr" style="display:none"></div>
 
-      if (!name || !email || !password) {
-        alert("Vinsamlegast fylltu út öll svæði");
-        return;
-      }
+      <div style="height:16px"></div>
+      <div class="muted">
+        Net: <span id="netName">—</span> · Valið: <span id="currency">DAI</span> á <span id="chain">Base</span>
+      </div>
+    </div>
+  </div>
 
-      const res = await fetch(`${API}/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password })
-      });
-
-      const data = await res.json();
-
-      if (data.walletId) {
-        localStorage.setItem("user", JSON.stringify(data));
-        alert("Skráning tókst!");
-        window.location.href = "mitt-burne.html";
-      } else {
-        alert("Villa: " + (data.error || "Óþekkt villa"));
-      }
-    }
-  </script>
+  <script src="/wallet.js" defer></script>
 </body>
 </html>
