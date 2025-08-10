@@ -1,4 +1,4 @@
-// topup.js – hraðval + QR + íslenskt talnasnið
+// topup.js – hraðval + QR + íslenskt talnasnið + rétt gjaldauppfærsla
 (function () {
   const env = (window.__ENV || {});
   const fmtISK = (n) =>
@@ -61,22 +61,24 @@
     } catch { return false; }
   }
 
+  // ✅ FIX: reiknar & birtir gjöldin rétt
   function calc() {
-    const amount = normalizeAmountInput();
+    const amount = normalizeAmountInput();          // rétt tala úr input
     const feeA = amount * (providers.A.pct / 100) + providers.A.fixed;
     const feeB = amount * (providers.B.pct / 100) + providers.B.fixed;
     const feeC = amount * (providers.C.pct / 100) + providers.C.fixed;
     const totalFees = feeA + feeB + feeC;
-    const totalPay = amount + totalFees;
-    const daiRecv = (amount / rateDAI).toFixed(2);
+    const totalPay  = amount + totalFees;
+    const daiRecv   = amount > 0 ? (amount / rateDAI).toFixed(2) : '0.00';
 
-    bAmount.textContent = fmtISK(amount);
-    pAFee.textContent = fmtISK(feeA);
-    pBFee.textContent = fmtISK(feeB);
-    pCFee.textContent = fmtISK(feeC);
-    bTotal.textContent = fmtISK(totalPay);
+    // uppfæra UI
+    bAmount.textContent  = fmtISK(amount);
+    pAFee.textContent    = fmtISK(feeA);
+    pBFee.textContent    = fmtISK(feeB);
+    pCFee.textContent    = fmtISK(feeC);
+    bTotal.textContent   = fmtISK(totalPay);
     bToAccount.textContent = fmtISK(amount);
-    bDai.textContent = daiRecv + ' DAI';
+    bDai.textContent     = daiRecv + ' DAI';
 
     const ok = amount > 0 && receiverInput.value.trim().length > 0 && !kycBlocked();
     confirmBtn.disabled = !ok;
