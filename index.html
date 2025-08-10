@@ -1,62 +1,50 @@
 <script>
-  const leyfilegt = prompt("Sláðu inn lykilorð:");
-  if (leyfilegt !== "stelpay2024") {
-    alert("Aðgangur hafnað.");
-    window.location.href = "https://google.com";
-  }
+  const p = prompt("Sláðu inn lykilorð:");
+  if (p !== "!") { alert("Aðgangur hafnað."); location.href = "https://google.com"; }
 </script>
-<!DOCTYPE html>
+<!doctype html>
 <html lang="is">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>StealthPay – Velkomin</title>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>StealthPay – Forsíða</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f8f8f8;
-      margin: 0;
-      padding: 0;
-      text-align: center;
-    }
-
-    .container {
-      padding: 80px 20px;
-    }
-
-    h1 {
-      font-size: 32px;
-      color: #333;
-    }
-
-    .button-group {
-      margin-top: 40px;
-    }
-
-    .btn {
-      display: inline-block;
-      padding: 15px 30px;
-      margin: 10px;
-      background: #111;
-      color: white;
-      text-decoration: none;
-      border-radius: 8px;
-      font-size: 18px;
-    }
-
-    .btn:hover {
-      background: #444;
-    }
+    body{background:#0b0e12;color:#e8eef7;font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;margin:0}
+    .wrap{max-width:960px;margin:40px auto;padding:0 16px;text-align:center}
+    .h{font-size:34px;font-weight:800;margin:8px 0}
+    .muted{opacity:.85}
+    .btn{padding:12px 16px;border-radius:12px;border:none;cursor:pointer}
+    .btn-primary{background:linear-gradient(90deg,#10b981,#2563eb);color:#fff}
+    .btn-ghost{background:#1b2130;color:#e8eef7}
+    .row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+    .grid{display:grid;gap:16px;margin-top:24px}
+    @media(min-width:900px){.grid-3{grid-template-columns:1fr 1fr 1fr}}
+    .card{background:#10141a;border:1px solid #1e2530;border-radius:16px;padding:18px}
+    a{color:#8ab4ff;text-decoration:none}
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>StealthPay</h1>
-    <p>Velkomin í næstu kynslóð greiðslumiðlunar 🔐</p>
-    
-    <div class="button-group">
-      <a href="login.html" class="btn">Skrá inn</a>
-      <a href="register.html" class="btn">Nýskráning</a>
+  <div class="wrap">
+    <div class="h">StealthPay – einfaldur netbanki með Web3 reikning</div>
+    <div class="muted">Skráðu nafn og lykilorð, veldu almennan notanda eða tengdan reikning og byrjaðu strax.</div>
+    <div style="height:12px"></div>
+    <div class="row">
+      <a href="register.html"><button class="btn btn-primary">Stofna aðgang</button></a>
+      <a href="login.html"><button class="btn btn-ghost">Innskrá</button></a>
+    </div>
+
+    <div class="grid grid-3">
+      <div class="card"><strong>QR greiðslur</strong><div class="muted">Greiddu eða fáðu greitt með QR kóða.</div></div>
+      <div class="card"><strong>Bráðabirgða‑ eða tengdur reikningur</strong><div class="muted">Almennur notandi eða Pro – þú ræður.</div></div>
+      <div class="card"><strong>Persónuvernd fyrst</strong><div class="muted">Við geymum aðeins KYC stöðu, ekki skjöl.</div></div>
+    </div>
+
+    <div style="margin-top:28px">
+      <div class="card">
+        <strong>Tilbúinn að byrja?</strong>
+        <div style="height:10px"></div>
+        <a href="register.html"><button class="btn btn-primary">Stofna aðgang</button></a>
+      </div>
     </div>
   </div>
 </body>
